@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://emea64xj2gwo"]
 
-[ext_resource type="Texture2D" uid="uid://cg2wuym2ldmm8" path="res://assets/Sprite-0001.png" id="1_7p1mj"]
-[ext_resource type="Script" uid="uid://bp6mk52dvb02u" path="res://scripts/enemy.gd" id="1_md0e3"]
+[ext_resource type="Texture2D" uid="uid://cg2wuym2ldmm8" path="res://entities/enemy/enemy_eye_sprites/Sprite-0001.png" id="1_7p1mj"]
+[ext_resource type="Script" uid="uid://bp6mk52dvb02u" path="res://entities/enemy/enemy.gd" id="1_md0e3"]
 
 [node name="Enemy" type="Node2D" unique_id=692083463]
 script = ExtResource("1_md0e3")

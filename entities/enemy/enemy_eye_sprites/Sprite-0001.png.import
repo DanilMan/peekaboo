@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b4qnntcc8nkk3"
-path="res://.godot/imported/Eyelid.png-7eb15510c28d805fc9c41d43b10bb711.ctex"
+uid="uid://cg2wuym2ldmm8"
+path="res://.godot/imported/Sprite-0001.png-e8c6c830d31b52da49ed967247bdf5c1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Eyelid.png"
-dest_files=["res://.godot/imported/Eyelid.png-7eb15510c28d805fc9c41d43b10bb711.ctex"]
+source_file="res://entities/enemy/enemy_eye_sprites/Sprite-0001.png"
+dest_files=["res://.godot/imported/Sprite-0001.png-e8c6c830d31b52da49ed967247bdf5c1.ctex"]
 
 [params]
 
