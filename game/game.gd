@@ -1,8 +1,8 @@
 extends Control
 class_name Game
 
-var player_eyelids_closed: bool = true;
-var enemy_eyes_closed: bool = false;
+var player_eyelids_closed: bool = true
+var enemy_eyes_closed: bool = false
 var rng:= RandomNumberGenerator.new()
 @onready var enemy_ui: EnemyUI = $EnemyUI
 @onready var hud: HUD = $HUD
@@ -22,6 +22,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		close_eye()
 	elif event.is_action_released("Eyelid"):
 		open_eye()
+	_on_player_eyes_state_changed() 
 
 func close_eye() -> void:
 	if player_eyelids_closed: return
@@ -35,6 +36,7 @@ func open_eye() -> void:
 
 func _on_enemy_timer_timeout() -> void:
 	toggle_enemy_eyes()
+	_on_enemy_eyes_state_changed()
 	var rand_time := rng.randi_range(3, 10)
 	timer.wait_time = rand_time
 	timer.start()
@@ -72,7 +74,7 @@ func _on_enemy_eyes_state_changed() -> void:
 		# player has 1 second to close eyes or game over (timer is necessary)
 		pass
 	# Rule 5: enemy closes shut and player is hiding
-	elif not enemy_eyes_closed and player_eyelids_closed:
+	elif enemy_eyes_closed and player_eyelids_closed:
 		# deduct points from player
 		pass
 
@@ -81,7 +83,6 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		#forces eyes open in edge case (could switch to pause menu later)
 		Input.action_release("Eyelid")
-		hud.open_eye()
 
 # Note to future self:
 # You need a timer in here to handle the point counter
