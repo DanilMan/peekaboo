@@ -1,0 +1,63 @@
+[gd_scene format=3 uid="uid://qk24avrd4lxg"]
+
+[ext_resource type="Script" uid="uid://daqh4fb7b8wv8" path="res://game/entities/player/hud.gd" id="1_uqxry"]
+[ext_resource type="Texture2D" uid="uid://b4qnntcc8nkk3" path="res://game/entities/player/Eyelid.png" id="2_uqxry"]
+
+[node name="HUD" type="Control" unique_id=2103998508]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_uqxry")
+
+[node name="ScorePadding" type="MarginContainer" parent="." unique_id=543005100]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="ScorePadding" unique_id=812413573]
+layout_mode = 2
+size_flags_vertical = 0
+text = "0"
+
+[node name="EyePair" type="Control" parent="." unique_id=182943661]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LeftEyelid" type="TextureRect" parent="EyePair" unique_id=1600981832]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_uqxry")
+expand_mode = 1
+flip_h = true
+
+[node name="RightEyelid" type="TextureRect" parent="EyePair" unique_id=26219062]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_uqxry")
+expand_mode = 1

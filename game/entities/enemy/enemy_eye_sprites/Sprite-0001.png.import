@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cg2wuym2ldmm8"
-path="res://.godot/imported/Sprite-0001.png-e8c6c830d31b52da49ed967247bdf5c1.ctex"
+path="res://.godot/imported/Sprite-0001.png-5eaa5de27ea54a79504e4e8e3848500d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://entities/enemy/enemy_eye_sprites/Sprite-0001.png"
-dest_files=["res://.godot/imported/Sprite-0001.png-e8c6c830d31b52da49ed967247bdf5c1.ctex"]
+source_file="res://game/entities/enemy/enemy_eye_sprites/Sprite-0001.png"
+dest_files=["res://.godot/imported/Sprite-0001.png-5eaa5de27ea54a79504e4e8e3848500d.ctex"]
 
 [params]
 

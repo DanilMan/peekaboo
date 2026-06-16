@@ -1,4 +1,9 @@
-extends Node2D
+[gd_scene format=3 uid="uid://ct14c6ddeuvpe"]
+
+[ext_resource type="Texture2D" uid="uid://b4qnntcc8nkk3" path="res://game/entities/player/Eyelid.png" id="1_3vyb7"]
+
+[sub_resource type="GDScript" id="GDScript_1a4jd"]
+script/source = "extends Node2D
 class_name Player
 
 var eyes_closed : bool = true
@@ -7,9 +12,9 @@ signal eyes_state_changed(eyes_closed: bool)
 @onready var right: Sprite2D = $Right
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("Eyelid"):
+	if event.is_action_pressed(\"Eyelid\"):
 		close_eye()
-	elif event.is_action_released("Eyelid"):
+	elif event.is_action_released(\"Eyelid\"):
 		open_eye()
 
 func close_eye() -> void:
@@ -30,7 +35,7 @@ func open_eye() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		#forces eyes open in edge case (could switch to pause menu later)
-		Input.action_release("Eyelid")
+		Input.action_release(\"Eyelid\")
 		open_eye()
 
 ## Called when the node enters the scene tree for the first time.
@@ -41,3 +46,19 @@ func _notification(what: int) -> void:
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta: float) -> void:
 	#pass
+"
+
+[node name="Player" type="Node2D" unique_id=648290993]
+script = SubResource("GDScript_1a4jd")
+
+[node name="Right" type="Sprite2D" parent="." unique_id=150975711]
+visible = false
+position = Vector2(575.00006, 299.75006)
+scale = Vector2(4.5000005, 4.5000005)
+texture = ExtResource("1_3vyb7")
+
+[node name="Left" type="Sprite2D" parent="." unique_id=640393864]
+visible = false
+position = Vector2(575, 299.75)
+scale = Vector2(4.5, 4.5)
+texture = ExtResource("1_3vyb7")

@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://dr3r1auw4dy2v"]
+
+[ext_resource type="Script" uid="uid://dqi5pqbma5hec" path="res://game/game.gd" id="1_2o5o3"]
+[ext_resource type="PackedScene" uid="uid://rt5j8cvago7a" path="res://game/entities/enemy/enemy_ui.tscn" id="1_k1jis"]
+[ext_resource type="PackedScene" uid="uid://qk24avrd4lxg" path="res://game/entities/player/hud.tscn" id="2_ay6pq"]
+
+[node name="Game" type="Control" unique_id=290337613]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_2o5o3")
+
+[node name="Background" type="ColorRect" parent="." unique_id=2007700823]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="EnemyUI" parent="." unique_id=740928026 instance=ExtResource("1_k1jis")]
+layout_mode = 1
+
+[node name="HUD" parent="." unique_id=2103998508 instance=ExtResource("2_ay6pq")]
+layout_mode = 1
+
+[node name="EnemyTimer" type="Timer" parent="." unique_id=357757377]
