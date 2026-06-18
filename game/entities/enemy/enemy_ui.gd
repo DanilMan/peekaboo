@@ -1,9 +1,15 @@
 extends Control
 class_name EnemyUI
 
+# =============================================================================
+# onready variables
+# =============================================================================
 @onready var lefteye: TextureRect = %LeftEye
 @onready var righteye: TextureRect = %RightEye
 
+# =============================================================================
+# helper methods
+# =============================================================================
 func enemy_eyes_open() -> void:
 	lefteye.visible = true
 	righteye.visible = true
