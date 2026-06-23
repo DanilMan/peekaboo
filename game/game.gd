@@ -4,7 +4,7 @@ class_name Game
 # =============================================================================
 # enums
 # =============================================================================
-enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, PLAYER_ATTACK, ENEMY_SCORES, CLOSED}
+enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, PLAYER_ATTACK, CLOSED}
 
 # =============================================================================
 # public variables 
@@ -159,16 +159,16 @@ func _toggle_enemy_eyes() -> void:
 # player activated game state handling
 func _evaluate_player_eyes_state() -> void:
 	var new_state: GameState
-	# Rule 1: player closes shut and enemy is staring
-	if player_eyelids_closed and not enemy_eyes_closed:
-		new_state = GameState.ENEMY_STARING
-	# Rule 2: player opens wide and enemy is hiding
-	elif not player_eyelids_closed and enemy_eyes_closed:
+	# Rule 1: player opens wide and enemy is hiding
+	if not player_eyelids_closed and enemy_eyes_closed:
 		new_state = GameState.PLAYER_STARING
+	# Rule 2: player closes shut and enemy is staring
+	elif player_eyelids_closed and not enemy_eyes_closed:
+		new_state = GameState.ENEMY_STARING
 	# Rule 3: player opens wide and enemy is staring
 	elif not player_eyelids_closed and not enemy_eyes_closed:
 		new_state = GameState.PLAYER_ATTACK
-	# Baseline: both eyes are closed and nothing is happening
+	# Rule 4: both eyes are closed and nothing is happening
 	elif player_eyelids_closed and enemy_eyes_closed:
 		new_state = GameState.CLOSED
 	_change_game_state(new_state)
@@ -176,18 +176,19 @@ func _evaluate_player_eyes_state() -> void:
 # enemy activated game state handling
 func _evaluate_enemy_eyes_state() -> void:
 	var new_state: GameState
-	# Rule 4: enemy opens wide and player is staring
-	if not enemy_eyes_closed and not player_eyelids_closed:
-		new_state = GameState.ENEMY_ATTACK
-	# Rule 5: enemy closes shut and player is hiding
-	elif enemy_eyes_closed and player_eyelids_closed:
-		new_state = GameState.ENEMY_SCORES
+	#Rule 5: enemy opens wide and player is hiding
+	if not enemy_eyes_closed and player_eyelids_closed:
+		new_state = GameState.ENEMY_STARING
 	#Rule 6: enemy closes shut and player is staring
 	elif enemy_eyes_closed and not player_eyelids_closed:
-		new_state = GameState.PLAYER_STARING
-	#Rule 7: enemy opens wide and player is hiding
-	elif not enemy_eyes_closed and player_eyelids_closed:
-		new_state = GameState.ENEMY_STARING
+		new_state = GameState.PLAYER_STARING	
+	# Rule 7: enemy opens wide and player is staring
+	elif not enemy_eyes_closed and not player_eyelids_closed:
+		new_state = GameState.ENEMY_ATTACK
+	# Rule 8: enemy closes shut and player is hiding
+	elif enemy_eyes_closed and player_eyelids_closed:
+		_enemy_scores_event()
+		new_state = GameState.CLOSED
 	_change_game_state(new_state)
 
 func _change_game_state(new_state: GameState) -> void:
@@ -216,7 +217,6 @@ func _change_game_state(new_state: GameState) -> void:
 		GameState.ENEMY_ATTACK:
 			# player has second(s) to close eyes or game over
 			player_grace_period_timer.start()
-		
 		GameState.PLAYER_ATTACK:
 			# enemy will close eyes within a second
 			# Add previous state check to see if enemy was blinking to steal points.
@@ -226,11 +226,6 @@ func _change_game_state(new_state: GameState) -> void:
 			enemy_timer.stop()
 			enemy_is_blinking = false
 			enemy_grace_period_timer.start()
-		GameState.ENEMY_SCORES:
-			player_score -= enemy_score
-			if player_score < 0: _game_over()
-			hud.set_player_score(player_score)
-			hud.hide_enemey_score()
 		GameState.CLOSED:
 			# both eyes closed and nothing is happening
 			player_grace_period_timer.stop()
@@ -255,6 +250,12 @@ func _on_player_grace_period_timeout() -> void:
 func _on_enemy_grace_period_timeout() -> void:
 	_toggle_enemy_eye_state()
 #endregion timer helper methods
+
+func _enemy_scores_event() -> void:
+	player_score -= enemy_score
+	if player_score < 0: _game_over()
+	hud.set_player_score(player_score)
+	hud.hide_enemey_score()
 
 func _game_over() -> void:
 	print("GAMEOVER")
