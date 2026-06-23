@@ -33,8 +33,7 @@ layout_mode = 1
 [node name="EnemyTimer" type="Timer" parent="." unique_id=357757377]
 one_shot = true
 
-[node name="EnemyWarningTimer" type="Timer" parent="." unique_id=668265566]
-wait_time = 2.0
+[node name="EnemyPiercingTimer" type="Timer" parent="." unique_id=987905416]
 one_shot = true
 
 [node name="PlayerPointTimer" type="Timer" parent="." unique_id=1100026669]

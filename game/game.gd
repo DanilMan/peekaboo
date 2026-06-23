@@ -4,7 +4,7 @@ class_name Game
 # =============================================================================
 # enums
 # =============================================================================
-enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, ENEMY_BLINKING, PLAYER_ATTACK, ENEMY_SCORES, CLOSED}
+enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, PLAYER_ATTACK, ENEMY_SCORES, CLOSED}
 
 # =============================================================================
 # public variables 
@@ -15,6 +15,7 @@ var current_state: GameState = GameState.CLOSED
 var previous_state: GameState = GameState.CLOSED
 var player_eyelids_closed: bool = false
 var enemy_eyes_closed: bool = true
+var enemy_is_blinking: bool = false
 var rng:= RandomNumberGenerator.new()
 
 # =============================================================================
@@ -23,7 +24,7 @@ var rng:= RandomNumberGenerator.new()
 @onready var enemy_ui: EnemyUI = $EnemyUI
 @onready var hud: HUD = $HUD
 @onready var enemy_timer: Timer = $EnemyTimer
-@onready var enemy_warning_timer: Timer = $EnemyWarningTimer
+@onready var enemy_piercing_timer: Timer = $EnemyPiercingTimer
 @onready var player_point_timer: Timer = $PlayerPointTimer
 @onready var enemy_point_timer: Timer = $EnemyPointTimer
 @onready var player_grace_period_timer: Timer = $PlayerGracePeriodTimer
@@ -44,11 +45,11 @@ func _ready() -> void:
 	_initialize_ui()
 	
 	_initialize_enemy_timer()
-	enemy_warning_timer.timeout.connect(_on_enemy_warning_timer_timeout)
+	enemy_piercing_timer.timeout.connect(_on_enemy_piercing_timer_timeout)
 	player_point_timer.timeout.connect(_on_player_score_tick)
 	enemy_point_timer.timeout.connect(_on_enemy_score_tick)
-	player_grace_period_timer.timeout.connect(_on_player_grace_period_tick)
-	enemy_grace_period_timer.timeout.connect(_on_enemy_grace_period_tick)
+	player_grace_period_timer.timeout.connect(_on_player_grace_period_timeout)
+	enemy_grace_period_timer.timeout.connect(_on_enemy_grace_period_timeout)
 	
 	_initialize_game_state()
 
@@ -98,6 +99,11 @@ func _close_player_eyes() -> void:
 
 func _open_player_eyes() -> void:
 	if not player_eyelids_closed: return
+	
+	if not enemy_piercing_timer.is_stopped():
+		_game_over()
+		return
+	
 	player_eyelids_closed = false
 	hud.open_eye()
 	_evaluate_player_eyes_state()
@@ -117,14 +123,24 @@ func _notification(what: int) -> void:
 #region helper methods
 # toggles enemy eyes and resets enemy_timer with rand cooldown
 func _on_enemy_timer_timeout() -> void:
-	# notify player enemy will close eyes soon
-	_change_game_state(GameState.ENEMY_BLINKING)
-	enemy_warning_timer.start()
-
-func _on_enemy_warning_timer_timeout() -> void:
-	_toggle_enemy_eye_state()
+	if current_state != GameState.ENEMY_STARING:
+		enemy_is_blinking = false
+		_toggle_enemy_eye_state()
+		return
+	
+	if not enemy_is_blinking:
+		# timer just ended and enemy is staring so start 1 second blink
+		enemy_is_blinking = true
+		print("enemy_is_blinking: ", enemy_is_blinking)
+		# play animation
+		enemy_timer.start(1)
+	else:
+		# 1 second blink ended toggle enemy eye state
+		enemy_is_blinking = false
+		_toggle_enemy_eye_state()
 
 func _toggle_enemy_eye_state() -> void:
+	print("enemy_is_blinking: ", enemy_is_blinking)
 	_toggle_enemy_eyes()
 	_evaluate_enemy_eyes_state()
 	var rand_time := rng.randi_range(3, 10)
@@ -179,7 +195,6 @@ func _change_game_state(new_state: GameState) -> void:
 	
 	previous_state = current_state
 	current_state = new_state
-	
 	print(GameState.find_key(current_state))
 	
 	player_point_timer.stop()
@@ -188,6 +203,7 @@ func _change_game_state(new_state: GameState) -> void:
 	match current_state:
 		GameState.ENEMY_STARING:
 			# increase enemy points
+			enemy_piercing_timer.start()
 			enemy_score = 0
 			hud.set_enemy_score(enemy_score)
 			hud.show_enemey_score()
@@ -200,14 +216,15 @@ func _change_game_state(new_state: GameState) -> void:
 		GameState.ENEMY_ATTACK:
 			# player has second(s) to close eyes or game over
 			player_grace_period_timer.start()
-		GameState.ENEMY_BLINKING:
-			#hud ui for blinking enemy eyes !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			pass
+		
 		GameState.PLAYER_ATTACK:
 			# enemy will close eyes within a second
 			# Add previous state check to see if enemy was blinking to steal points.
+			if enemy_is_blinking:
+				player_score += enemy_score
+				hud.set_player_score(player_score)
 			enemy_timer.stop()
-			enemy_warning_timer.stop()
+			enemy_is_blinking = false
 			enemy_grace_period_timer.start()
 		GameState.ENEMY_SCORES:
 			player_score -= enemy_score
@@ -220,6 +237,10 @@ func _change_game_state(new_state: GameState) -> void:
 #endregion game state logic
 
 #region timer helper methods
+func _on_enemy_piercing_timer_timeout() -> void:
+	#stop animation
+	pass
+
 func _on_player_score_tick() -> void:
 	player_score += 1
 	hud.set_player_score(player_score)
@@ -228,10 +249,10 @@ func _on_enemy_score_tick() -> void:
 	enemy_score += 1
 	hud.set_enemy_score(enemy_score)
 	
-func _on_player_grace_period_tick() -> void:
+func _on_player_grace_period_timeout() -> void:
 	_game_over()
 	
-func _on_enemy_grace_period_tick() -> void:
+func _on_enemy_grace_period_timeout() -> void:
 	_toggle_enemy_eye_state()
 #endregion timer helper methods
 
@@ -239,14 +260,19 @@ func _game_over() -> void:
 	print("GAMEOVER")
 	get_tree().quit()
 
+# stop all timers on Game Over UI
+func _stop_all_timers() -> void:
+	enemy_timer.stop()
+	enemy_piercing_timer.stop()
+	player_point_timer.stop()
+	enemy_point_timer.stop()
+	player_grace_period_timer.stop()
+	enemy_grace_period_timer.stop()
+
 #endregion helper methods
 
 # Note to future self:
-# Create blinking or flashing animation when enemy is about to close its eyes
-# Check if player opened eyes during blinking by checking previous state on player_attack logic
-# and if true, give player enemies points
-# Make one more timer for when player first closes eyes to make sure they're closed for 1 second
-# if they open within time, check previous state for ENEMY_PIERCING
-# else if the timer completes it will simply set the GAME_STATE to ENEMY_STARING
-# To make sure warning timers don't break the game, use a current or previous GAME STATE
-# check to make sure game left off where it is expected to be for next state.
+# Needs animations for both piercing eyes and blinking eyes
+# Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively
+# Create a max_player_score counter and create a function to make sure it only sets maximum scores
+# Needs Game Over screen
