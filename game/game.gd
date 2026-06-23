@@ -95,7 +95,7 @@ func _close_player_eyes() -> void:
 	if player_eyelids_closed: return
 	player_eyelids_closed = true
 	hud.close_eye()
-	_evaluate_player_eyes_state()
+	_evaluate_eyes_state(true)
 
 func _open_player_eyes() -> void:
 	if not player_eyelids_closed: return
@@ -106,7 +106,7 @@ func _open_player_eyes() -> void:
 	
 	player_eyelids_closed = false
 	hud.open_eye()
-	_evaluate_player_eyes_state()
+	_evaluate_eyes_state(true)
 
 #endregion player input
 
@@ -142,7 +142,7 @@ func _on_enemy_timer_timeout() -> void:
 func _toggle_enemy_eye_state() -> void:
 	print("enemy_is_blinking: ", enemy_is_blinking)
 	_toggle_enemy_eyes()
-	_evaluate_enemy_eyes_state()
+	_evaluate_eyes_state(false)
 	var rand_time := rng.randi_range(3, 10)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.start()
@@ -156,8 +156,8 @@ func _toggle_enemy_eyes() -> void:
 		enemy_eyes_closed = true
 
 #region game state logic
-# player activated game state handling
-func _evaluate_player_eyes_state() -> void:
+# game state handling
+func _evaluate_eyes_state(is_player_action: bool) -> void:
 	var new_state: GameState
 	# Rule 1: player opens wide and enemy is hiding
 	if not player_eyelids_closed and enemy_eyes_closed:
@@ -165,29 +165,13 @@ func _evaluate_player_eyes_state() -> void:
 	# Rule 2: player closes shut and enemy is staring
 	elif player_eyelids_closed and not enemy_eyes_closed:
 		new_state = GameState.ENEMY_STARING
-	# Rule 3: player opens wide and enemy is staring
+	# Rule 3: both open wide and context determines attacker
 	elif not player_eyelids_closed and not enemy_eyes_closed:
-		new_state = GameState.PLAYER_ATTACK
-	# Rule 4: both eyes are closed and nothing is happening
+		new_state = GameState.PLAYER_ATTACK if is_player_action else GameState.ENEMY_ATTACK
+	# Rule 4: both eyes are closed and passive state
 	elif player_eyelids_closed and enemy_eyes_closed:
-		new_state = GameState.CLOSED
-	_change_game_state(new_state)
-
-# enemy activated game state handling
-func _evaluate_enemy_eyes_state() -> void:
-	var new_state: GameState
-	#Rule 5: enemy opens wide and player is hiding
-	if not enemy_eyes_closed and player_eyelids_closed:
-		new_state = GameState.ENEMY_STARING
-	#Rule 6: enemy closes shut and player is staring
-	elif enemy_eyes_closed and not player_eyelids_closed:
-		new_state = GameState.PLAYER_STARING	
-	# Rule 7: enemy opens wide and player is staring
-	elif not enemy_eyes_closed and not player_eyelids_closed:
-		new_state = GameState.ENEMY_ATTACK
-	# Rule 8: enemy closes shut and player is hiding
-	elif enemy_eyes_closed and player_eyelids_closed:
-		_enemy_scores_event()
+		if not is_player_action:
+			_enemy_scores_event()
 		new_state = GameState.CLOSED
 	_change_game_state(new_state)
 
@@ -277,3 +261,4 @@ func _stop_all_timers() -> void:
 # Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively
 # Create a max_player_score counter and create a function to make sure it only sets maximum scores
 # Needs Game Over screen
+# Maybe get rid of Previous State
