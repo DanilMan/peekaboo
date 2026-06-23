@@ -4,12 +4,15 @@ class_name Game
 # =============================================================================
 # enums
 # =============================================================================
-enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, PLAYER_ATTACK, ENEMY_SCORES, CLOSED}
+enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, ENEMY_BLINKING, PLAYER_ATTACK, ENEMY_SCORES, CLOSED}
 
 # =============================================================================
-# public variables
+# public variables 
 # =============================================================================
+var player_score: int
+var enemy_score: int
 var current_state: GameState = GameState.CLOSED
+var previous_state: GameState = GameState.CLOSED
 var player_eyelids_closed: bool = false
 var enemy_eyes_closed: bool = true
 var rng:= RandomNumberGenerator.new()
@@ -17,52 +20,88 @@ var rng:= RandomNumberGenerator.new()
 # =============================================================================
 # onready variables
 # =============================================================================
-@onready var hud: HUD = $HUD
 @onready var enemy_ui: EnemyUI = $EnemyUI
-@onready var timer: Timer = $EnemyTimer
+@onready var hud: HUD = $HUD
+@onready var enemy_timer: Timer = $EnemyTimer
+@onready var enemy_warning_timer: Timer = $EnemyWarningTimer
+@onready var player_point_timer: Timer = $PlayerPointTimer
+@onready var enemy_point_timer: Timer = $EnemyPointTimer
+@onready var player_grace_period_timer: Timer = $PlayerGracePeriodTimer
+@onready var enemy_grace_period_timer: Timer = $EnemyGracePeriodTimer
 
 # =============================================================================
 # built-in virtual methods
 # =============================================================================
 #region built-in methods
+
+#region _ready
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	#get_window().grab_focus() #TRY THIS FIRST FOR MOUSE FIRST CLICK NOT CAPTURED!!!!!!
 	#DisplayServer.window_request_attention() ## TRY THIS!!!!!!!!
 	#DisplayServer.window_move_to_foreground() ### TRY THIS 2!!!!!!!!
 	
+	_initialize_ui()
+	
+	_initialize_enemy_timer()
+	enemy_warning_timer.timeout.connect(_on_enemy_warning_timer_timeout)
+	player_point_timer.timeout.connect(_on_player_score_tick)
+	enemy_point_timer.timeout.connect(_on_enemy_score_tick)
+	player_grace_period_timer.timeout.connect(_on_player_grace_period_tick)
+	enemy_grace_period_timer.timeout.connect(_on_enemy_grace_period_tick)
+	
+	_initialize_game_state()
+
+# helper funcitons of _ready
+func _initialize_ui() -> void:
 	# this will change when eyes are controled together with animations!!!!!!!!!!!!!!!
 	hud.left_eyelid.visible = player_eyelids_closed # set player eye to bool handler
 	hud.right_eyelid.visible = player_eyelids_closed # set player eye to bool handler
-	enemy_ui.lefteye.visible = not enemy_eyes_closed # set enemy eye to bool handler
-	enemy_ui.righteye.visible = not enemy_eyes_closed # set enemy eye to bool handler
-	
+	enemy_ui.left_eye.visible = not enemy_eyes_closed # set enemy eye to bool handler
+	enemy_ui.right_eye.visible = not enemy_eyes_closed # set enemy eye to bool handler
+
+func _initialize_enemy_timer() -> void:
 	rng.randomize()
 	var rand_time := rng.randi_range(3, 10)
-	timer.wait_time = rand_time
-	timer.timeout.connect(_on_enemy_timer_timeout)
-	timer.start()
+	enemy_timer.wait_time = rand_time
+	enemy_timer.timeout.connect(_on_enemy_timer_timeout)
+	enemy_timer.start()
+
+func _initialize_game_state() -> void:
+	var starting_state: GameState
+	if player_eyelids_closed and enemy_eyes_closed:
+		starting_state = GameState.CLOSED
+	elif not player_eyelids_closed and enemy_eyes_closed:
+		starting_state = GameState.PLAYER_STARING
+	elif player_eyelids_closed and not enemy_eyes_closed:
+		starting_state = GameState.ENEMY_STARING
+	elif not player_eyelids_closed and not enemy_eyes_closed:
+		starting_state = GameState.ENEMY_ATTACK
+	_change_game_state(starting_state)
+
+#endregion _ready
 
 #region player input
 # input method to open or close player eyes
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("Eyelid"):
-		_close_eye()
+		_close_player_eyes()
 	elif event.is_action_released("Eyelid"):
-		_open_eye()
+		_open_player_eyes()
 
 # helper methods of _unhandled_input
-func _close_eye() -> void:
+func _close_player_eyes() -> void:
 	if player_eyelids_closed: return
-	_evaluate_player_eyes_state()
 	player_eyelids_closed = true
 	hud.close_eye()
-
-func _open_eye() -> void:
-	if not player_eyelids_closed: return
 	_evaluate_player_eyes_state()
+
+func _open_player_eyes() -> void:
+	if not player_eyelids_closed: return
 	player_eyelids_closed = false
 	hud.open_eye()
+	_evaluate_player_eyes_state()
+
 #endregion player input
 
 # --- App Out of Focus ---
@@ -76,13 +115,21 @@ func _notification(what: int) -> void:
 # helper methods
 # =============================================================================
 #region helper methods
-# toggles enemy eyes and resets timer with rand cooldown
+# toggles enemy eyes and resets enemy_timer with rand cooldown
 func _on_enemy_timer_timeout() -> void:
+	# notify player enemy will close eyes soon
+	_change_game_state(GameState.ENEMY_BLINKING)
+	enemy_warning_timer.start()
+
+func _on_enemy_warning_timer_timeout() -> void:
+	_toggle_enemy_eye_state()
+
+func _toggle_enemy_eye_state() -> void:
 	_toggle_enemy_eyes()
 	_evaluate_enemy_eyes_state()
 	var rand_time := rng.randi_range(3, 10)
-	timer.wait_time = rand_time
-	timer.start()
+	enemy_timer.wait_time = rand_time
+	enemy_timer.start()
 
 func _toggle_enemy_eyes() -> void:
 	if enemy_eyes_closed:
@@ -95,61 +142,111 @@ func _toggle_enemy_eyes() -> void:
 #region game state logic
 # player activated game state handling
 func _evaluate_player_eyes_state() -> void:
+	var new_state: GameState
 	# Rule 1: player closes shut and enemy is staring
 	if player_eyelids_closed and not enemy_eyes_closed:
-		current_state = GameState.ENEMY_STARING
+		new_state = GameState.ENEMY_STARING
 	# Rule 2: player opens wide and enemy is hiding
 	elif not player_eyelids_closed and enemy_eyes_closed:
-		current_state = GameState.PLAYER_STARING
+		new_state = GameState.PLAYER_STARING
 	# Rule 3: player opens wide and enemy is staring
 	elif not player_eyelids_closed and not enemy_eyes_closed:
-		current_state = GameState.ENEMY_ATTACK
+		new_state = GameState.PLAYER_ATTACK
 	# Baseline: both eyes are closed and nothing is happening
 	elif player_eyelids_closed and enemy_eyes_closed:
-		current_state = GameState.CLOSED
-	_change_game_state()
+		new_state = GameState.CLOSED
+	_change_game_state(new_state)
 
 # enemy activated game state handling
 func _evaluate_enemy_eyes_state() -> void:
+	var new_state: GameState
 	# Rule 4: enemy opens wide and player is staring
 	if not enemy_eyes_closed and not player_eyelids_closed:
-		current_state = GameState.PLAYER_ATTACK
+		new_state = GameState.ENEMY_ATTACK
 	# Rule 5: enemy closes shut and player is hiding
 	elif enemy_eyes_closed and player_eyelids_closed:
-		current_state = GameState.ENEMY_SCORES
-	_change_game_state()
+		new_state = GameState.ENEMY_SCORES
+	#Rule 6: enemy closes shut and player is staring
+	elif enemy_eyes_closed and not player_eyelids_closed:
+		new_state = GameState.PLAYER_STARING
+	#Rule 7: enemy opens wide and player is hiding
+	elif not enemy_eyes_closed and player_eyelids_closed:
+		new_state = GameState.ENEMY_STARING
+	_change_game_state(new_state)
 
-func _change_game_state() -> void:
-	#print(current_state) # remove later!!!!!!!!!!!!!!!
+func _change_game_state(new_state: GameState) -> void:
+	if current_state == new_state: return
+	
+	previous_state = current_state
+	current_state = new_state
+	
+	print(GameState.find_key(current_state))
+	
+	player_point_timer.stop()
+	enemy_point_timer.stop()
+	
 	match current_state:
 		GameState.ENEMY_STARING:
 			# increase enemy points
-			pass
+			enemy_score = 0
+			hud.set_enemy_score(enemy_score)
+			hud.show_enemey_score()
+			enemy_point_timer.start()
+			player_grace_period_timer.stop()
 		GameState.PLAYER_STARING:
 			# increase player points
-			pass
+			player_point_timer.start()
+			hud.hide_enemey_score()
 		GameState.ENEMY_ATTACK:
-			# close enemy eyes after a second (or animation)
-			# SPECIAL CASE if within 1 second of enemy having just opened eyes game over
-			# add logic for if enemy eyes were within a second of closing take points
-			# if enemy eyes were in the middle of being open then no points added
+			# player has second(s) to close eyes or game over
+			player_grace_period_timer.start()
+		GameState.ENEMY_BLINKING:
+			#hud ui for blinking enemy eyes !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			pass
 		GameState.PLAYER_ATTACK:
-			# player has 1 second to close eyes or game over (time_stamp _process necessary)
-			pass
+			# enemy will close eyes within a second
+			# Add previous state check to see if enemy was blinking to steal points.
+			enemy_timer.stop()
+			enemy_warning_timer.stop()
+			enemy_grace_period_timer.start()
 		GameState.ENEMY_SCORES:
-			# deduct points from player
-			pass
+			player_score -= enemy_score
+			if player_score < 0: _game_over()
+			hud.set_player_score(player_score)
+			hud.hide_enemey_score()
 		GameState.CLOSED:
 			# both eyes closed and nothing is happening
-			pass
-		
+			player_grace_period_timer.stop()
 #endregion game state logic
+
+#region timer helper methods
+func _on_player_score_tick() -> void:
+	player_score += 1
+	hud.set_player_score(player_score)
+
+func _on_enemy_score_tick() -> void:
+	enemy_score += 1
+	hud.set_enemy_score(enemy_score)
+	
+func _on_player_grace_period_tick() -> void:
+	_game_over()
+	
+func _on_enemy_grace_period_tick() -> void:
+	_toggle_enemy_eye_state()
+#endregion timer helper methods
+
+func _game_over() -> void:
+	print("GAMEOVER")
+	get_tree().quit()
 
 #endregion helper methods
 
 # Note to future self:
-# You need a timer in here to handle the point counter
-# You need a second timer for the time bomb clock for the 4th Rule
-# Use the time stamps where it is helpful or necessary
-# If confused look at time bomb and point counter timer info in gemini
+# Create blinking or flashing animation when enemy is about to close its eyes
+# Check if player opened eyes during blinking by checking previous state on player_attack logic
+# and if true, give player enemies points
+# Make one more timer for when player first closes eyes to make sure they're closed for 1 second
+# if they open within time, check previous state for ENEMY_PIERCING
+# else if the timer completes it will simply set the GAME_STATE to ENEMY_STARING
+# To make sure warning timers don't break the game, use a current or previous GAME STATE
+# check to make sure game left off where it is expected to be for next state.

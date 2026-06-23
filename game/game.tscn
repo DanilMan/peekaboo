@@ -31,3 +31,19 @@ layout_mode = 1
 layout_mode = 1
 
 [node name="EnemyTimer" type="Timer" parent="." unique_id=357757377]
+one_shot = true
+
+[node name="EnemyWarningTimer" type="Timer" parent="." unique_id=668265566]
+wait_time = 2.0
+one_shot = true
+
+[node name="PlayerPointTimer" type="Timer" parent="." unique_id=1100026669]
+
+[node name="EnemyPointTimer" type="Timer" parent="." unique_id=2134612882]
+
+[node name="PlayerGracePeriodTimer" type="Timer" parent="." unique_id=1036131174]
+wait_time = 2.0
+one_shot = true
+
+[node name="EnemyGracePeriodTimer" type="Timer" parent="." unique_id=1319176852]
+one_shot = true

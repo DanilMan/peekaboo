@@ -57,7 +57,19 @@ offset_bottom = 23.0
 grow_horizontal = 2
 mouse_filter = 2
 
-[node name="Label" type="Label" parent="ScorePadding" unique_id=812413573]
+[node name="PlayerScore" type="Label" parent="ScorePadding" unique_id=812413573]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
+theme_override_font_sizes/font_size = 45
 text = "0"
+
+[node name="EnemyScore" type="Label" parent="ScorePadding" unique_id=1905587817]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9575936, 0.19622377, 0.13812414, 1)
+theme_override_font_sizes/font_size = 45
+text = "0"
+horizontal_alignment = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1626989082]
