@@ -209,7 +209,7 @@ func _change_game_state(new_state: GameState) -> void:
 		GameState.PLAYER_ATTACK:
 			# enemy will close eyes within a second
 			# Add previous state check to see if enemy was blinking to steal points.
-			enemy_ui.play_stop_warnings()
+			enemy_ui.play_stop_warnings() # can't move this anywhere else without causing problems!!!!!!!!!!!!
 			if enemy_is_blinking:
 				player_score += enemy_score
 				hud.set_player_score(player_score)
@@ -269,4 +269,28 @@ func _stop_all_timers() -> void:
 # Note to future self:
 # Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively  
 # Double check for race condition bugs (like enemy grace period)
+# !Bug: if enemy is blinking and player quickly opens and then closes eyes and opens it back up
+# I believe it treats it like a piercing state because the enemy's eyes are still technically open
+# For sure monkey at the keyboard seems to break the warning eyes
+# I need to make a second animation player for it... silly me, it can only do one animation at time
+# Maybe break up enemy eye toggle into two functions that toggle calls to, so that I can directly
+# to enemy eye closing (or opening) when needed
+
+# After initial playtest, I think points should go up in a non linear way so it's clear the longer
+# you open your eyes, the more points you are gaining. Also, maybe a spacebar cooldown bar, so the
+# player sees they can keep their eyes shut for only so long (adds difficulty/complexity and
+# communicates to player.
+# As game stands in current state, it is unclear to non-gamer player what game is. Player repeatedly
+# smashed spacebar "the monkey at the keyboard." Didn't understand why they kept losing and what
+# they were supposed to do to not lose. Needs more visual and eventually audio communication. Also,
+# new race case bugs found.
+
+# Add point animation, enemy attack dialation animation, player eyelid animation (as well as eyelid
+# twitch for enemy attack), spacebar stamina bar. Get as much visual information to the player to
+# communicate what the game is. Also maybe add some placeholder sfx.
+
+# Add monster silhouette that fades in and out at random like a flickering and fading light source
+# allows their face to almost be visible in the darkness, creeping out the plater and giving them
+# something to look at
+
 # Maybe get rid of Previous State
