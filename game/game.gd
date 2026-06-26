@@ -4,7 +4,7 @@ class_name Game
 # =============================================================================
 # enums
 # =============================================================================
-enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, PLAYER_ATTACK, CLOSED}
+enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, PLAYER_ATTACK, CLOSED, GAME_OVER}
 
 # =============================================================================
 # public variables 
@@ -30,6 +30,7 @@ var rng:= RandomNumberGenerator.new()
 @onready var enemy_point_timer: Timer = $EnemyPointTimer
 @onready var player_grace_period_timer: Timer = $PlayerGracePeriodTimer
 @onready var enemy_grace_period_timer: Timer = $EnemyGracePeriodTimer
+@onready var game_over_screen: CanvasLayer = $GameOverScreen
 
 # =============================================================================
 # built-in virtual methods
@@ -82,8 +83,12 @@ func _initialize_game_state() -> void:
 #endregion _ready
 
 #region player input
-# input method to open or close player eyes
+# input method to open or close player eyes and game over input
 func _unhandled_input(event: InputEvent) -> void:
+	if current_state == GameState.GAME_OVER:
+		if event.is_action_pressed("ui_accept"):
+			get_tree().reload_current_scene()
+		return
 	if event.is_action_pressed("Eyelid"):
 		_close_player_eyes()
 	elif event.is_action_released("Eyelid"):
@@ -100,7 +105,7 @@ func _open_player_eyes() -> void:
 	if not player_eyelids_closed: return
 	
 	if not enemy_piercing_timer.is_stopped():
-		_game_over()
+		_change_game_state(GameState.GAME_OVER)
 		return
 	
 	player_eyelids_closed = false
@@ -214,6 +219,9 @@ func _change_game_state(new_state: GameState) -> void:
 		GameState.CLOSED:
 			# both eyes closed and nothing is happening
 			player_grace_period_timer.stop()
+		GameState.GAME_OVER:
+			game_over_screen.visible = true
+			_stop_all_timers()
 #endregion game state logic
 
 #region timer helper methods
@@ -234,7 +242,7 @@ func _on_enemy_score_tick() -> void:
 	hud.set_enemy_score(enemy_score)
 	
 func _on_player_grace_period_timeout() -> void:
-	_game_over()
+	_change_game_state(GameState.GAME_OVER)
 	
 func _on_enemy_grace_period_timeout() -> void:
 	_toggle_enemy_eye_state()
@@ -243,13 +251,9 @@ func _on_enemy_grace_period_timeout() -> void:
 
 func _enemy_scores_event() -> void:
 	player_score -= enemy_score
-	if player_score < 0: _game_over()
+	if player_score < 0: _change_game_state(GameState.GAME_OVER)
 	hud.set_player_score(player_score)
 	hud.hide_enemey_score()
-
-func _game_over() -> void:
-	print("GAMEOVER")
-	get_tree().quit()
 
 # stop all timers on Game Over UI
 func _stop_all_timers() -> void:
@@ -265,5 +269,4 @@ func _stop_all_timers() -> void:
 # Note to future self:
 # Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively  
 # Double check for race condition bugs (like enemy grace period)
-# Needs Game Over screen
 # Maybe get rid of Previous State

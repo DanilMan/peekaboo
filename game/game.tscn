@@ -47,3 +47,21 @@ one_shot = true
 [node name="EnemyGracePeriodTimer" type="Timer" parent="." unique_id=1319176852]
 wait_time = 0.2
 one_shot = true
+
+[node name="GameOverScreen" type="CanvasLayer" parent="." unique_id=1837245074]
+visible = false
+
+[node name="CenterContainer" type="CenterContainer" parent="GameOverScreen" unique_id=2010395874]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="GameOverScreen/CenterContainer" unique_id=784226994]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "GAME OVER
+Press Space to Restart"
+horizontal_alignment = 1
