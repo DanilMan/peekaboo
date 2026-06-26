@@ -2,8 +2,468 @@
 
 [ext_resource type="Texture2D" uid="uid://cg2wuym2ldmm8" path="res://game/entities/enemy/enemy_eye_sprites/Sprite-0001.png" id="1_dhnaa"]
 [ext_resource type="Script" uid="uid://chgtjavgsptl8" path="res://game/entities/enemy/enemy_ui.gd" id="1_g2pjw"]
+[ext_resource type="Texture2D" uid="uid://u6xhd0p6wqgd" path="res://game/entities/enemy/enemy_eye_sprites/Sprite-0002.png" id="3_mvy52"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_mvy52"]
+load_path = "res://.godot/imported/Sprite-0001.png-5eaa5de27ea54a79504e4e8e3848500d.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_oryvq"]
+load_path = "res://.godot/imported/Sprite-0001.png-5eaa5de27ea54a79504e4e8e3848500d.ctex"
+
+[sub_resource type="Animation" id="Animation_oryvq"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EyePivot/EyePair/LeftEye:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_dhnaa")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EyePivot/EyePair/RightEye:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_dhnaa")]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("EyePivot/EyePair/LeftEye:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("EyePivot/EyePair/RightEye:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:texture")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [SubResource("CompressedTexture2D_mvy52")]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:self_modulate")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:texture")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [SubResource("CompressedTexture2D_oryvq")]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:self_modulate")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:visible")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:visible")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_hk4xo"]
+resource_name = "blinking"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1, 1.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [SubResource("CompressedTexture2D_mvy52"), ExtResource("3_mvy52"), SubResource("CompressedTexture2D_mvy52"), ExtResource("3_mvy52")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5, 1, 1.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [SubResource("CompressedTexture2D_oryvq"), ExtResource("3_mvy52"), SubResource("CompressedTexture2D_oryvq"), ExtResource("3_mvy52")]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:visible")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:self_modulate")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 0.1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.078431375), Color(1, 1, 1, 1), Color(1, 1, 1, 1)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:self_modulate")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.078431375), Color(1, 1, 1, 1), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_chx0s"]
+resource_name = "closed"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EyePivot/EyePair/LeftEye:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EyePivot/EyePair/RightEye:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_mvy52"]
+resource_name = "closing"
+length = 0.06
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EyePivot/EyePair/LeftEye:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.05),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [ExtResource("1_dhnaa"), ExtResource("3_mvy52")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EyePivot/EyePair/RightEye:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.05),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [ExtResource("1_dhnaa"), ExtResource("3_mvy52")]
+}
+
+[sub_resource type="Animation" id="Animation_gwahb"]
+resource_name = "open"
+length = 0.001
+loop_mode = 2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EyePivot/EyePair/LeftEye:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_dhnaa")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EyePivot/EyePair/RightEye:texture")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("1_dhnaa")]
+}
+
+[sub_resource type="Animation" id="Animation_bgx15"]
+resource_name = "opening"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EyePivot/EyePair/LeftEye:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EyePivot/EyePair/RightEye:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("EyePivot/EyePair/LeftEye:texture")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [ExtResource("3_mvy52"), ExtResource("1_dhnaa")]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("EyePivot/EyePair/RightEye:texture")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [ExtResource("3_mvy52"), ExtResource("1_dhnaa")]
+}
+
+[sub_resource type="Animation" id="Animation_pvir1"]
+resource_name = "piercing"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [SubResource("CompressedTexture2D_mvy52")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:self_modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:texture")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [SubResource("CompressedTexture2D_oryvq")]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:self_modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:visible")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:visible")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="Animation" id="Animation_f4jqc"]
+resource_name = "stop_warnings"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("EyePivot/WarningEyePair/WarningLeftEye:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("EyePivot/WarningEyePair/WarningRightEye:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_mvy52"]
+_data = {
+&"RESET": SubResource("Animation_oryvq"),
+&"blinking": SubResource("Animation_hk4xo"),
+&"close": SubResource("Animation_chx0s"),
+&"closing": SubResource("Animation_mvy52"),
+&"open": SubResource("Animation_gwahb"),
+&"opening": SubResource("Animation_bgx15"),
+&"piercing": SubResource("Animation_pvir1"),
+&"stop_warnings": SubResource("Animation_f4jqc")
+}
 
 [node name="EnemyUI" type="Control" unique_id=740928026]
+z_index = 1
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -39,6 +499,8 @@ theme_override_constants/separation = 145
 
 [node name="LeftEye" type="TextureRect" parent="EyePivot/EyePair" unique_id=1515048323]
 unique_name_in_owner = true
+visible = false
+z_index = -1
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("1_dhnaa")
@@ -46,23 +508,39 @@ flip_h = true
 
 [node name="RightEye" type="TextureRect" parent="EyePivot/EyePair" unique_id=980973420]
 unique_name_in_owner = true
+visible = false
+z_index = -1
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("1_dhnaa")
 
-[node name="WarningLeftEye" type="TextureRect" parent="EyePivot/EyePair" unique_id=87065776]
-unique_name_in_owner = true
+[node name="WarningEyePair" type="HBoxContainer" parent="EyePivot" unique_id=1458818835]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.5
+offset_top = -150.0
+offset_right = 200.5
+offset_bottom = -22.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = 145
+
+[node name="WarningLeftEye" type="TextureRect" parent="EyePivot/WarningEyePair" unique_id=271583567]
 visible = false
+z_index = 1
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("1_dhnaa")
+texture = SubResource("CompressedTexture2D_mvy52")
 flip_h = true
 
-[node name="WarningRightEye" type="TextureRect" parent="EyePivot/EyePair" unique_id=1035697101]
-unique_name_in_owner = true
+[node name="WarningRightEye" type="TextureRect" parent="EyePivot/WarningEyePair" unique_id=546935426]
 visible = false
+z_index = 1
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("1_dhnaa")
+texture = SubResource("CompressedTexture2D_oryvq")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1330436813]
+libraries/ = SubResource("AnimationLibrary_mvy52")

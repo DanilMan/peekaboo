@@ -4,18 +4,28 @@ class_name EnemyUI
 # =============================================================================
 # onready variables
 # =============================================================================
-@onready var left_eye: TextureRect = %LeftEye
-@onready var right_eye: TextureRect = %RightEye
-@onready var warning_left_eye: TextureRect = %WarningLeftEye
-@onready var warning_right_eye: TextureRect = %WarningRightEye
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 # =============================================================================
 # helper methods
 # =============================================================================
-func enemy_eyes_open() -> void:
-	left_eye.visible = true
-	right_eye.visible = true
-	
-func enemy_eyes_close() -> void:
-	left_eye.visible = false
-	right_eye.visible = false
+func play_opening() -> void:
+	animation_player.play("opening")
+
+func queue_open() -> void:
+	animation_player.queue("open")
+
+func play_closing() -> void:
+	animation_player.play("closing")
+
+func queue_close() -> void:
+	animation_player.queue("close")
+
+func play_blinking() -> void:
+	animation_player.play("blinking")
+
+func play_piercing() -> void:
+	animation_player.play("piercing")
+
+func play_stop_warnings() -> void:
+	animation_player.play("stop_warnings")

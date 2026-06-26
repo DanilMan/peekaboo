@@ -45,4 +45,5 @@ wait_time = 2.0
 one_shot = true
 
 [node name="EnemyGracePeriodTimer" type="Timer" parent="." unique_id=1319176852]
+wait_time = 0.2
 one_shot = true

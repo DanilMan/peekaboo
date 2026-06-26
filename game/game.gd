@@ -10,6 +10,7 @@ enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, PLAYER_ATTACK, CLOS
 # public variables 
 # =============================================================================
 var player_score: int
+var max_score: int
 var enemy_score: int
 var current_state: GameState = GameState.CLOSED
 var previous_state: GameState = GameState.CLOSED
@@ -58,8 +59,6 @@ func _initialize_ui() -> void:
 	# this will change when eyes are controled together with animations!!!!!!!!!!!!!!!
 	hud.left_eyelid.visible = player_eyelids_closed # set player eye to bool handler
 	hud.right_eyelid.visible = player_eyelids_closed # set player eye to bool handler
-	enemy_ui.left_eye.visible = not enemy_eyes_closed # set enemy eye to bool handler
-	enemy_ui.right_eye.visible = not enemy_eyes_closed # set enemy eye to bool handler
 
 func _initialize_enemy_timer() -> void:
 	rng.randomize()
@@ -131,16 +130,14 @@ func _on_enemy_timer_timeout() -> void:
 	if not enemy_is_blinking:
 		# timer just ended and enemy is staring so start 1 second blink
 		enemy_is_blinking = true
-		print("enemy_is_blinking: ", enemy_is_blinking)
-		# play animation
-		enemy_timer.start(1)
+		enemy_ui.play_blinking()
+		enemy_timer.start(2)
 	else:
 		# 1 second blink ended toggle enemy eye state
 		enemy_is_blinking = false
 		_toggle_enemy_eye_state()
 
 func _toggle_enemy_eye_state() -> void:
-	print("enemy_is_blinking: ", enemy_is_blinking)
 	_toggle_enemy_eyes()
 	_evaluate_eyes_state(false)
 	var rand_time := rng.randi_range(3, 10)
@@ -149,10 +146,12 @@ func _toggle_enemy_eye_state() -> void:
 
 func _toggle_enemy_eyes() -> void:
 	if enemy_eyes_closed:
-		enemy_ui.enemy_eyes_open()
+		enemy_ui.play_opening()
+		enemy_ui.queue_open()
 		enemy_eyes_closed = false
 	else:
-		enemy_ui.enemy_eyes_close()
+		enemy_ui.play_closing()
+		enemy_ui.queue_close()
 		enemy_eyes_closed = true
 
 #region game state logic
@@ -180,7 +179,7 @@ func _change_game_state(new_state: GameState) -> void:
 	
 	previous_state = current_state
 	current_state = new_state
-	print(GameState.find_key(current_state))
+	#print(GameState.find_key(current_state))
 	
 	player_point_timer.stop()
 	enemy_point_timer.stop()
@@ -188,6 +187,7 @@ func _change_game_state(new_state: GameState) -> void:
 	match current_state:
 		GameState.ENEMY_STARING:
 			# increase enemy points
+			enemy_ui.play_piercing()
 			enemy_piercing_timer.start()
 			enemy_score = 0
 			hud.set_enemy_score(enemy_score)
@@ -204,6 +204,7 @@ func _change_game_state(new_state: GameState) -> void:
 		GameState.PLAYER_ATTACK:
 			# enemy will close eyes within a second
 			# Add previous state check to see if enemy was blinking to steal points.
+			enemy_ui.play_stop_warnings()
 			if enemy_is_blinking:
 				player_score += enemy_score
 				hud.set_player_score(player_score)
@@ -217,12 +218,16 @@ func _change_game_state(new_state: GameState) -> void:
 
 #region timer helper methods
 func _on_enemy_piercing_timer_timeout() -> void:
-	#stop animation
-	pass
+	enemy_ui.play_stop_warnings()
 
 func _on_player_score_tick() -> void:
 	player_score += 1
 	hud.set_player_score(player_score)
+	_update_max_score()
+
+func _update_max_score() -> void:
+	if player_score > max_score:
+		max_score = player_score
 
 func _on_enemy_score_tick() -> void:
 	enemy_score += 1
@@ -233,6 +238,7 @@ func _on_player_grace_period_timeout() -> void:
 	
 func _on_enemy_grace_period_timeout() -> void:
 	_toggle_enemy_eye_state()
+	#could cause bug of enemies eyes toggling back on if race condition!!!!!!!!!
 #endregion timer helper methods
 
 func _enemy_scores_event() -> void:
@@ -257,8 +263,7 @@ func _stop_all_timers() -> void:
 #endregion helper methods
 
 # Note to future self:
-# Needs animations for both piercing eyes and blinking eyes
-# Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively
-# Create a max_player_score counter and create a function to make sure it only sets maximum scores
+# Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively  
+# Double check for race condition bugs (like enemy grace period)
 # Needs Game Over screen
 # Maybe get rid of Previous State
