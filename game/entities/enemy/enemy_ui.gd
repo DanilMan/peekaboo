@@ -10,6 +10,7 @@ class_name EnemyUI
 # =============================================================================
 # helper methods
 # =============================================================================
+#region enemy eye animations
 func play_opening() -> void:
 	eye_animation_player.play("opening")
 
@@ -26,6 +27,9 @@ func play_attack() -> void:
 	eye_animation_player.play("attack")
 	eye_animation_player.queue("open")
 
+#endregion enemy eye animations
+
+#region warning eye animations
 func play_blinking() -> void:
 	warning_animation_player.play("blinking")
 
@@ -34,3 +38,5 @@ func play_piercing() -> void:
 
 func stop_warnings() -> void:
 	warning_animation_player.play("stop_warnings")
+
+#endregion warning eye animations

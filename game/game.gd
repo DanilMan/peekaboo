@@ -44,8 +44,6 @@ func _ready() -> void:
 	#DisplayServer.window_request_attention() ## TRY THIS!!!!!!!!
 	#DisplayServer.window_move_to_foreground() ### TRY THIS 2!!!!!!!!
 	
-	_initialize_ui()
-	
 	_initialize_enemy_timer()
 	enemy_piercing_timer.timeout.connect(_on_enemy_piercing_timer_timeout)
 	player_point_timer.timeout.connect(_on_player_score_tick)
@@ -53,12 +51,8 @@ func _ready() -> void:
 	player_grace_period_timer.timeout.connect(_on_player_grace_period_timeout)
 	
 	_initialize_game_state()
-
-# helper funcitons of _ready
-func _initialize_ui() -> void:
-	# this will change when eyes are controled together with animations!!!!!!!!!!!!!!!
-	hud.left_eyelid.visible = player_eyelids_closed # set player eye to bool handler
-	hud.right_eyelid.visible = player_eyelids_closed # set player eye to bool handler
+	
+	hud.open_eye() # initialize player eyes open 
 
 func _initialize_enemy_timer() -> void:
 	rng.randomize()
@@ -119,6 +113,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		#forces eyes open in edge case (could switch to pause menu later)
 		Input.action_release("Eyelid")
+
 #endregion built-in methods
 
 # =============================================================================
@@ -214,7 +209,7 @@ func _change_game_state(new_state: GameState) -> void:
 			# enemy will close eyes within a second
 			# Add previous state check to see if enemy was blinking to steal points.
 			if enemy_is_blinking:
-				player_score += enemy_score * 100 # no hard coding!!!!!!!!!!!!!!
+				player_score += enemy_score * (10 ** _get_base_10_log(player_score))
 				hud.set_player_score(player_score)
 			enemy_timer.stop()
 			enemy_is_blinking = false
@@ -225,6 +220,7 @@ func _change_game_state(new_state: GameState) -> void:
 		GameState.GAME_OVER:
 			game_over_screen.visible = true
 			_stop_all_timers()
+
 #endregion game state logic
 
 #region timer helper methods
@@ -251,7 +247,7 @@ func _on_player_grace_period_timeout() -> void:
 #endregion timer helper methods
 
 func _enemy_scores_event() -> void:
-	player_score -= enemy_score * 100 # fix later, no hard coding!!!!!!!!!!
+	player_score -= enemy_score * (10 ** _get_base_10_log(player_score))
 	if player_score < 0: _change_game_state(GameState.GAME_OVER)
 	hud.set_player_score(player_score)
 	hud.hide_enemey_score()
@@ -264,16 +260,20 @@ func _stop_all_timers() -> void:
 	enemy_point_timer.stop()
 	player_grace_period_timer.stop()
 
+func _get_base_10_log(num: int) -> int:
+	if num <= 0: return 0
+	return floor(log(num) / log(10))
+	
 #endregion helper methods
 
 # Note to future self:
 # Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively  
 
 
-# After initial playtest, I think points should go up in a non-linear way so it's clear the longer
-# you open your eyes, the more points you are gaining. Also, maybe a spacebar cooldown bar, so the
-# player sees they can keep their eyes shut for only so long (adds difficulty/complexity and
-# communicates to player.
+# After initial playtest:
+# Also, maybe a spacebar cooldown bar, so the player sees they can keep their eyes shut for only so 
+# long (adds difficulty/complexity and communicates to player.
+
 # As game stands in current state, it is unclear to non-gamer player what game is. Player repeatedly
 # smashed spacebar "the monkey at the keyboard." Didn't understand why they kept losing and what
 # they were supposed to do to not lose. Needs more visual and eventually audio communication.
