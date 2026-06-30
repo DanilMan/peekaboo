@@ -9,9 +9,10 @@ enum GameState {ENEMY_STARING, PLAYER_STARING, ENEMY_ATTACK, PLAYER_ATTACK, CLOS
 # =============================================================================
 # public variables 
 # =============================================================================
-var player_score: int
-var max_score: int
-var enemy_score: int
+var player_score: int = 0
+var player_score_mult: int = 0
+var max_score: int = 0
+var enemy_score: int = 0
 var current_state: GameState = GameState.CLOSED
 var previous_state: GameState = GameState.CLOSED
 var player_eyelids_closed: bool = false
@@ -29,7 +30,6 @@ var rng:= RandomNumberGenerator.new()
 @onready var player_point_timer: Timer = $PlayerPointTimer
 @onready var enemy_point_timer: Timer = $EnemyPointTimer
 @onready var player_grace_period_timer: Timer = $PlayerGracePeriodTimer
-@onready var enemy_grace_period_timer: Timer = $EnemyGracePeriodTimer
 @onready var game_over_screen: CanvasLayer = $GameOverScreen
 
 # =============================================================================
@@ -51,7 +51,6 @@ func _ready() -> void:
 	player_point_timer.timeout.connect(_on_player_score_tick)
 	enemy_point_timer.timeout.connect(_on_enemy_score_tick)
 	player_grace_period_timer.timeout.connect(_on_player_grace_period_timeout)
-	enemy_grace_period_timer.timeout.connect(_on_enemy_grace_period_timeout)
 	
 	_initialize_game_state()
 
@@ -98,6 +97,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _close_player_eyes() -> void:
 	if player_eyelids_closed: return
 	player_eyelids_closed = true
+	player_score_mult = 0
 	hud.close_eye()
 	_evaluate_eyes_state(true)
 
@@ -136,7 +136,7 @@ func _on_enemy_timer_timeout() -> void:
 		# timer just ended and enemy is staring so start 1 second blink
 		enemy_is_blinking = true
 		enemy_ui.play_blinking()
-		enemy_timer.start(2)
+		enemy_timer.start(2) # hard coded!!!!!!!!!!!!!!!!!!!!!
 	else:
 		# 1 second blink ended toggle enemy eye state
 		enemy_is_blinking = false
@@ -145,7 +145,7 @@ func _on_enemy_timer_timeout() -> void:
 func _toggle_enemy_eye_state() -> void:
 	_toggle_enemy_eyes()
 	_evaluate_eyes_state(false)
-	var rand_time := rng.randi_range(3, 10)
+	var rand_time := rng.randi_range(3, 10) # hard coded!!!!!!!!!!!!!!
 	enemy_timer.wait_time = rand_time
 	enemy_timer.start()
 
@@ -181,6 +181,7 @@ func _evaluate_eyes_state(is_player_action: bool) -> void:
 
 func _change_game_state(new_state: GameState) -> void:
 	if current_state == new_state: return
+	if current_state == GameState.GAME_OVER: return
 	
 	previous_state = current_state
 	current_state = new_state
@@ -188,6 +189,8 @@ func _change_game_state(new_state: GameState) -> void:
 	
 	player_point_timer.stop()
 	enemy_point_timer.stop()
+	
+	enemy_ui.stop_warnings()
 	
 	match current_state:
 		GameState.ENEMY_STARING:
@@ -205,17 +208,17 @@ func _change_game_state(new_state: GameState) -> void:
 			hud.hide_enemey_score()
 		GameState.ENEMY_ATTACK:
 			# player has second(s) to close eyes or game over
+			enemy_ui.play_attack()
 			player_grace_period_timer.start()
 		GameState.PLAYER_ATTACK:
 			# enemy will close eyes within a second
 			# Add previous state check to see if enemy was blinking to steal points.
-			enemy_ui.play_stop_warnings() # can't move this anywhere else without causing problems!!!!!!!!!!!!
 			if enemy_is_blinking:
-				player_score += enemy_score
+				player_score += enemy_score * 100 # no hard coding!!!!!!!!!!!!!!
 				hud.set_player_score(player_score)
 			enemy_timer.stop()
 			enemy_is_blinking = false
-			enemy_grace_period_timer.start()
+			_toggle_enemy_eye_state()
 		GameState.CLOSED:
 			# both eyes closed and nothing is happening
 			player_grace_period_timer.stop()
@@ -226,10 +229,11 @@ func _change_game_state(new_state: GameState) -> void:
 
 #region timer helper methods
 func _on_enemy_piercing_timer_timeout() -> void:
-	enemy_ui.play_stop_warnings()
+	enemy_ui.stop_warnings()
 
 func _on_player_score_tick() -> void:
-	player_score += 1
+	player_score_mult += 1 # hard coded!!!!!!!!!!!!!!!!!!!
+	player_score += player_score_mult
 	hud.set_player_score(player_score)
 	_update_max_score()
 
@@ -243,14 +247,11 @@ func _on_enemy_score_tick() -> void:
 	
 func _on_player_grace_period_timeout() -> void:
 	_change_game_state(GameState.GAME_OVER)
-	
-func _on_enemy_grace_period_timeout() -> void:
-	_toggle_enemy_eye_state()
-	#could cause bug of enemies eyes toggling back on if race condition!!!!!!!!!
+
 #endregion timer helper methods
 
 func _enemy_scores_event() -> void:
-	player_score -= enemy_score
+	player_score -= enemy_score * 100 # fix later, no hard coding!!!!!!!!!!
 	if player_score < 0: _change_game_state(GameState.GAME_OVER)
 	hud.set_player_score(player_score)
 	hud.hide_enemey_score()
@@ -262,32 +263,24 @@ func _stop_all_timers() -> void:
 	player_point_timer.stop()
 	enemy_point_timer.stop()
 	player_grace_period_timer.stop()
-	enemy_grace_period_timer.stop()
 
 #endregion helper methods
 
 # Note to future self:
 # Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively  
-# Double check for race condition bugs (like enemy grace period)
-# !Bug: if enemy is blinking and player quickly opens and then closes eyes and opens it back up
-# I believe it treats it like a piercing state because the enemy's eyes are still technically open
-# For sure monkey at the keyboard seems to break the warning eyes
-# I need to make a second animation player for it... silly me, it can only do one animation at time
-# Maybe break up enemy eye toggle into two functions that toggle calls to, so that I can directly
-# to enemy eye closing (or opening) when needed
 
-# After initial playtest, I think points should go up in a non linear way so it's clear the longer
+
+# After initial playtest, I think points should go up in a non-linear way so it's clear the longer
 # you open your eyes, the more points you are gaining. Also, maybe a spacebar cooldown bar, so the
 # player sees they can keep their eyes shut for only so long (adds difficulty/complexity and
 # communicates to player.
 # As game stands in current state, it is unclear to non-gamer player what game is. Player repeatedly
 # smashed spacebar "the monkey at the keyboard." Didn't understand why they kept losing and what
-# they were supposed to do to not lose. Needs more visual and eventually audio communication. Also,
-# new race case bugs found.
+# they were supposed to do to not lose. Needs more visual and eventually audio communication.
 
-# Add point animation, enemy attack dialation animation, player eyelid animation (as well as eyelid
-# twitch for enemy attack), spacebar stamina bar. Get as much visual information to the player to
-# communicate what the game is. Also maybe add some placeholder sfx.
+# Add point animation, player eyelid twitch for enemy attack, spacebar stamina bar.
+# Get as much visual information to the player to communicate what the game is. Also
+# maybe add some placeholder sfx.
 
 # Add monster silhouette that fades in and out at random like a flickering and fading light source
 # allows their face to almost be visible in the darkness, creeping out the plater and giving them

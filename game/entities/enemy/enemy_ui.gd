@@ -4,28 +4,33 @@ class_name EnemyUI
 # =============================================================================
 # onready variables
 # =============================================================================
-@onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var eye_animation_player: AnimationPlayer = $EyeAnimationPlayer
+@onready var warning_animation_player: AnimationPlayer = $WarningAnimationPlayer
 
 # =============================================================================
 # helper methods
 # =============================================================================
 func play_opening() -> void:
-	animation_player.play("opening")
+	eye_animation_player.play("opening")
 
 func queue_open() -> void:
-	animation_player.queue("open")
+	eye_animation_player.queue("open")
 
 func play_closing() -> void:
-	animation_player.play("closing")
+	eye_animation_player.play("closing")
 
 func queue_close() -> void:
-	animation_player.queue("close")
+	eye_animation_player.queue("close")
+
+func play_attack() -> void:
+	eye_animation_player.play("attack")
+	eye_animation_player.queue("open")
 
 func play_blinking() -> void:
-	animation_player.play("blinking")
+	warning_animation_player.play("blinking")
 
 func play_piercing() -> void:
-	animation_player.play("piercing")
+	warning_animation_player.play("piercing")
 
-func play_stop_warnings() -> void:
-	animation_player.play("stop_warnings")
+func stop_warnings() -> void:
+	warning_animation_player.play("stop_warnings")
