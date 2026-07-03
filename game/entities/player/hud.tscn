@@ -1,9 +1,49 @@
 [gd_scene format=3 uid="uid://qk24avrd4lxg"]
 
 [ext_resource type="Script" uid="uid://daqh4fb7b8wv8" path="res://game/entities/player/hud.gd" id="1_uqxry"]
+[ext_resource type="Shader" uid="uid://baggmlrn5oa28" path="res://game/entities/player/hud.gdshader" id="2_43e7t"]
 [ext_resource type="Texture2D" uid="uid://bkkadmweoxjm7" path="res://game/entities/player/Sprite-Eyelid.png" id="2_ksls2"]
+[ext_resource type="Script" uid="uid://bpwrv35osk88r" path="res://game/entities/player/eigengrau_overlay.gd" id="3_eeqgp"]
 [ext_resource type="Script" uid="uid://dyjpv3k1m4w48" path="res://game/entities/player/left_eyelid.gd" id="3_morwl"]
 [ext_resource type="Script" uid="uid://druhwohejplt0" path="res://game/entities/player/right_eyelid.gd" id="4_y50hj"]
+[ext_resource type="Script" uid="uid://i2i2wqtncgun" path="res://game/entities/player/player_score.gd" id="5_tetkd"]
+[ext_resource type="Texture2D" uid="uid://dcy64yov7rglm" path="res://game/entities/player/particle.png" id="6_shwo4"]
+[ext_resource type="Script" uid="uid://dkvsijjii1cbj" path="res://game/entities/player/gpu_particles_2d.gd" id="7_tklkg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_eeqgp"]
+shader = ExtResource("2_43e7t")
+shader_parameter/eigengrau_color = Color(0.086, 0.086, 0.114, 1)
+shader_parameter/static_intensity = 0.015
+shader_parameter/animation_speed = 12.0
+shader_parameter/virtual_resolution = Vector2(320, 180)
+shader_parameter/fade = 0.0
+
+[sub_resource type="Gradient" id="Gradient_tklkg"]
+offsets = PackedFloat32Array(0, 0.4869281, 1)
+colors = PackedColorArray(0.52866244, 0.52866244, 0.52866244, 1, 1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_43e7t"]
+gradient = SubResource("Gradient_tklkg")
+
+[sub_resource type="Curve" id="Curve_tklkg"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.5806452, 0.7136466), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveTexture" id="CurveTexture_43e7t"]
+curve = SubResource("Curve_tklkg")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_y50hj"]
+particle_flag_disable_z = true
+emission_shape_scale = Vector3(0.75, 0.75, 1)
+emission_shape = 3
+emission_box_extents = Vector3(0, 0, 0)
+direction = Vector3(0, -1, 0)
+spread = 90.0
+initial_velocity_min = 60.079998
+initial_velocity_max = 107.29
+gravity = Vector3(0, 200, 0)
+scale_curve = SubResource("CurveTexture_43e7t")
+color_ramp = SubResource("GradientTexture1D_43e7t")
 
 [sub_resource type="Animation" id="Animation_y50hj"]
 length = 0.001
@@ -58,6 +98,7 @@ tracks/3/keys = {
 
 [sub_resource type="Animation" id="Animation_tetkd"]
 resource_name = "closing"
+length = 0.2
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -109,7 +150,7 @@ tracks/3/keys = {
 
 [sub_resource type="Animation" id="Animation_shwo4"]
 resource_name = "opening"
-length = 0.23333333
+length = 0.2
 step = 0.0333
 tracks/0/type = "value"
 tracks/0/imported = false
@@ -118,7 +159,7 @@ tracks/0/path = NodePath("EyePair/Left:visible")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0.23333333),
+"times": PackedFloat32Array(0.2),
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [false]
@@ -130,7 +171,7 @@ tracks/1/path = NodePath("EyePair/Right:visible")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0.23333333),
+"times": PackedFloat32Array(0.2),
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [false]
@@ -142,7 +183,7 @@ tracks/2/path = NodePath("EyePair/Left/LeftEyelid:frame")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.033333335, 0.06666667, 0.10000001, 0.13333334, 0.16666667, 0.2),
+"times": PackedFloat32Array(0, 0.033333335, 0.06666667, 0.10000001, 0.13333334, 0.16666667, 0.19),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
 "update": 1,
 "values": [6, 5, 4, 3, 2, 1, 0]
@@ -154,7 +195,7 @@ tracks/3/path = NodePath("EyePair/Right/RightEyelid:frame")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.033333335, 0.06666667, 0.1, 0.13333334, 0.16666667, 0.2),
+"times": PackedFloat32Array(0, 0.033333335, 0.06666667, 0.1, 0.13333334, 0.16666667, 0.19),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
 "update": 1,
 "values": [6, 5, 4, 3, 2, 1, 0]
@@ -199,7 +240,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="LeftEyelid" type="Sprite2D" parent="EyePair/Left" unique_id=1452193826]
-scale = Vector2(4.5379686, 2.054375)
+scale = Vector2(0.0078125, 0.0078125)
 texture = ExtResource("2_ksls2")
 flip_h = true
 hframes = 7
@@ -216,10 +257,21 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="RightEyelid" type="Sprite2D" parent="EyePair/Right" unique_id=2062479485]
-scale = Vector2(4.5379686, 2.054375)
+scale = Vector2(0.0078125, 0.0078125)
 texture = ExtResource("2_ksls2")
 hframes = 7
 script = ExtResource("4_y50hj")
+
+[node name="EigengrauOverlay" type="ColorRect" parent="." unique_id=456515336]
+material = SubResource("ShaderMaterial_eeqgp")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_eeqgp")
 
 [node name="ScorePadding" type="MarginContainer" parent="." unique_id=543005100]
 layout_mode = 1
@@ -234,17 +286,30 @@ theme_override_constants/margin_right = 12
 [node name="PlayerScore" type="Label" parent="ScorePadding" unique_id=812413573]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 0
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 45
 text = "0"
+horizontal_alignment = 1
+script = ExtResource("5_tetkd")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="ScorePadding/PlayerScore" unique_id=1061304468]
+position = Vector2(-12, 0)
+emitting = false
+amount = 50
+texture = ExtResource("6_shwo4")
+lifetime = 0.75
+process_material = SubResource("ParticleProcessMaterial_y50hj")
+script = ExtResource("7_tklkg")
 
 [node name="EnemyScore" type="Label" parent="ScorePadding" unique_id=1905587817]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 8
 theme_override_colors/font_color = Color(0.9575936, 0.19622377, 0.13812414, 1)
 theme_override_font_sizes/font_size = 45
 text = "0"
-horizontal_alignment = 2
+horizontal_alignment = 1
 
 [node name="EyelidAnimationPlayer" type="AnimationPlayer" parent="." unique_id=1626989082]
 libraries/ = SubResource("AnimationLibrary_tklkg")

@@ -30,7 +30,7 @@ var rng:= RandomNumberGenerator.new()
 @onready var player_point_timer: Timer = $PlayerPointTimer
 @onready var enemy_point_timer: Timer = $EnemyPointTimer
 @onready var player_grace_period_timer: Timer = $PlayerGracePeriodTimer
-@onready var game_over_screen: CanvasLayer = $GameOverScreen
+@onready var game_over_screen: MarginContainer = $GameOverScreen
 
 # =============================================================================
 # built-in virtual methods
@@ -187,6 +187,8 @@ func _change_game_state(new_state: GameState) -> void:
 	
 	enemy_ui.stop_warnings()
 	
+	hud.grey_player_score()
+	
 	match current_state:
 		GameState.ENEMY_STARING:
 			# increase enemy points
@@ -201,6 +203,7 @@ func _change_game_state(new_state: GameState) -> void:
 			# increase player points
 			player_point_timer.start()
 			hud.hide_enemey_score()
+			hud.white_player_score()
 		GameState.ENEMY_ATTACK:
 			# player has second(s) to close eyes or game over
 			enemy_ui.play_attack()
@@ -209,7 +212,7 @@ func _change_game_state(new_state: GameState) -> void:
 			# enemy will close eyes within a second
 			# Add previous state check to see if enemy was blinking to steal points.
 			if enemy_is_blinking:
-				player_score += enemy_score * (10 ** _get_base_10_log(player_score))
+				player_score += _get_enemy_mult_score()
 				hud.set_player_score(player_score)
 			enemy_timer.stop()
 			enemy_is_blinking = false
@@ -218,7 +221,8 @@ func _change_game_state(new_state: GameState) -> void:
 			# both eyes closed and nothing is happening
 			player_grace_period_timer.stop()
 		GameState.GAME_OVER:
-			game_over_screen.visible = true
+			game_over_screen.game_over(max_score)
+			hud.hide_player_score()
 			_stop_all_timers()
 
 #endregion game state logic
@@ -228,9 +232,10 @@ func _on_enemy_piercing_timer_timeout() -> void:
 	enemy_ui.stop_warnings()
 
 func _on_player_score_tick() -> void:
-	player_score_mult += 1 # hard coded!!!!!!!!!!!!!!!!!!!
+	player_score_mult += 1
 	player_score += player_score_mult
 	hud.set_player_score(player_score)
+	hud.pop_player_score()
 	_update_max_score()
 
 func _update_max_score() -> void:
@@ -240,6 +245,7 @@ func _update_max_score() -> void:
 func _on_enemy_score_tick() -> void:
 	enemy_score += 1
 	hud.set_enemy_score(enemy_score)
+	hud.pop_enemy_score()
 	
 func _on_player_grace_period_timeout() -> void:
 	_change_game_state(GameState.GAME_OVER)
@@ -247,7 +253,7 @@ func _on_player_grace_period_timeout() -> void:
 #endregion timer helper methods
 
 func _enemy_scores_event() -> void:
-	player_score -= enemy_score * (10 ** _get_base_10_log(player_score))
+	player_score -= _get_enemy_mult_score()
 	if player_score < 0: _change_game_state(GameState.GAME_OVER)
 	hud.set_player_score(player_score)
 	hud.hide_enemey_score()
@@ -260,6 +266,9 @@ func _stop_all_timers() -> void:
 	enemy_point_timer.stop()
 	player_grace_period_timer.stop()
 
+func _get_enemy_mult_score() -> int:
+	return enemy_score * (10 ** _get_base_10_log(player_score))
+
 func _get_base_10_log(num: int) -> int:
 	if num <= 0: return 0
 	return floor(log(num) / log(10))
@@ -271,14 +280,27 @@ func _get_base_10_log(num: int) -> int:
 
 
 # After initial playtest:
-# Also, maybe a spacebar cooldown bar, so the player sees they can keep their eyes shut for only so 
+# Also, maybe a spacebar stamina bar, so the player sees they can keep their eyes shut for only so 
 # long (adds difficulty/complexity and communicates to player.
+
+# After second playtest:
+# Point system starting making more sense, still confusion over how to defeat enemy eyes. Both
+# players kept tapping the space bar instead of holding it down. I think that spacebar stamina bar
+# might help, but I don't know what other visual cues might help. Yes I could add the scary enemy
+# audio and a serene hum that makes holding the eyes shut satisfying (as well as visual white noise
+# behind the eyes). But of course audio will do a great job communicating. I want more visual clues
+# beyond straight up have a text prompt tell the player to hold down spacebar to avoid the enemy.
+# Maybe create menu screen and allow player to check or uncheck toggle spacebar for different
+# player styles.
+
+# Eigengrau shader needs tweaking. STAMINA BAR!!!!
 
 # As game stands in current state, it is unclear to non-gamer player what game is. Player repeatedly
 # smashed spacebar "the monkey at the keyboard." Didn't understand why they kept losing and what
 # they were supposed to do to not lose. Needs more visual and eventually audio communication.
 
-# Add point animation, player eyelid twitch for enemy attack, spacebar stamina bar.
+# Add enemy point animation?, particle text for enemy points, player eyelid twitch for enemy attack,
+# spacebar stamina bar.
 # Get as much visual information to the player to communicate what the game is. Also
 # maybe add some placeholder sfx.
 
