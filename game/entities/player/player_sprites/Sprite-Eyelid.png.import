@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcy64yov7rglm"
-path="res://.godot/imported/particle.png-6ea48f772d6f6061ebd2ad802f35efe5.ctex"
+uid="uid://bkkadmweoxjm7"
+path="res://.godot/imported/Sprite-Eyelid.png-af78179deac3e66cb2a74391b970c869.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://game/entities/player/particle.png"
-dest_files=["res://.godot/imported/particle.png-6ea48f772d6f6061ebd2ad802f35efe5.ctex"]
+source_file="res://game/entities/player/player_sprites/Sprite-Eyelid.png"
+dest_files=["res://.godot/imported/Sprite-Eyelid.png-af78179deac3e66cb2a74391b970c869.ctex"]
 
 [params]
 

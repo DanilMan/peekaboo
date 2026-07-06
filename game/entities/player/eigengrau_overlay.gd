@@ -1,14 +1,32 @@
+class_name EigengrauOverlay
 extends ColorRect
+## Sets visual state of eigengrau shader overlay
 
+# =============================================================================
+# public variables 
+# =============================================================================
 var current_fade: float = 0.0
-@export var fade_in_duration: float = 0.6
-@export var fade_out_duration: float = 0.1
 var tween: Tween
 
+# =============================================================================
+# onready variables
+# =============================================================================
+@export var fade_in_duration: float = 0.6
+@export var fade_out_duration: float = 0.1
+
+# =============================================================================
+# built-in virtual methods
+# =============================================================================
 func _ready() -> void:
 	visible = true
-	material.set_shader_parameter("fade", 0.0)
+	var eig_shader_material := material as ShaderMaterial
+	if eig_shader_material:
+		eig_shader_material.set_shader_parameter("fade", 0.0)
 
+
+# =============================================================================
+# helper methods
+# =============================================================================
 func set_fade(is_closed: bool) -> void:
 	if tween and tween.is_valid():
 		tween.kill()

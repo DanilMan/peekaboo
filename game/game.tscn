@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://dqi5pqbma5hec" path="res://game/game.gd" id="1_2o5o3"]
 [ext_resource type="PackedScene" uid="uid://rt5j8cvago7a" path="res://game/entities/enemy/enemy_ui.tscn" id="1_k1jis"]
 [ext_resource type="PackedScene" uid="uid://qk24avrd4lxg" path="res://game/entities/player/hud.tscn" id="2_ay6pq"]
-[ext_resource type="Script" uid="uid://c13qol6rxa8xr" path="res://game/game_over_screen.gd" id="4_4fuuu"]
 
 [node name="Game" type="Control" unique_id=290337613]
 layout_mode = 3
@@ -55,7 +54,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_top = 322
-script = ExtResource("4_4fuuu")
 
 [node name="VBox Container" type="VBoxContainer" parent="GameOverScreen" unique_id=1307660792]
 layout_mode = 2

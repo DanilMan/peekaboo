@@ -1,11 +1,8 @@
 [gd_scene format=3 uid="uid://rt5j8cvago7a"]
 
 [ext_resource type="Script" uid="uid://chgtjavgsptl8" path="res://game/entities/enemy/enemy_ui.gd" id="1_g2pjw"]
-[ext_resource type="Script" uid="uid://62v0wnsjq5bc" path="res://game/entities/enemy/left.gd" id="2_chx0s"]
+[ext_resource type="Script" uid="uid://dln6b42hosy42" path="res://game/entities/enemy/enemy_eye_resize.gd" id="2_mvy52"]
 [ext_resource type="Texture2D" uid="uid://c1uqusnfqwy1w" path="res://game/entities/enemy/enemy_eye_sprites/Sprite-0001__attack.png" id="2_oryvq"]
-[ext_resource type="Script" uid="uid://dvdln1xl6aryd" path="res://game/entities/enemy/right.gd" id="4_gwahb"]
-[ext_resource type="Script" uid="uid://cbslce0dosy2q" path="res://game/entities/enemy/left_warning.gd" id="5_bgx15"]
-[ext_resource type="Script" uid="uid://buiqf0d3lu0n3" path="res://game/entities/enemy/right_warning.gd" id="6_pvir1"]
 
 [sub_resource type="Animation" id="Animation_oryvq"]
 length = 0.001
@@ -523,14 +520,14 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_override_constants/separation = 145
 
-[node name="Left" type="Control" parent="EyePivot/EyePair" unique_id=1419831321]
-unique_name_in_owner = true
+[node name="Left" type="Control" parent="EyePivot/EyePair" unique_id=1419831321 node_paths=PackedStringArray("sprite")]
 visible = false
 z_index = -1
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 mouse_filter = 2
-script = ExtResource("2_chx0s")
+script = ExtResource("2_mvy52")
+sprite = NodePath("LeftEye")
 
 [node name="LeftEye" type="Sprite2D" parent="EyePivot/EyePair/Left" unique_id=1278635377]
 texture = ExtResource("2_oryvq")
@@ -538,14 +535,14 @@ centered = false
 flip_h = true
 hframes = 12
 
-[node name="Right" type="Control" parent="EyePivot/EyePair" unique_id=1616445870]
-unique_name_in_owner = true
+[node name="Right" type="Control" parent="EyePivot/EyePair" unique_id=1616445870 node_paths=PackedStringArray("sprite")]
 visible = false
 z_index = -1
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 mouse_filter = 2
-script = ExtResource("4_gwahb")
+script = ExtResource("2_mvy52")
+sprite = NodePath("RightEye")
 
 [node name="RightEye" type="Sprite2D" parent="EyePivot/EyePair/Right" unique_id=1900651871]
 texture = ExtResource("2_oryvq")
@@ -565,13 +562,14 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_override_constants/separation = 145
 
-[node name="LeftWarning" type="Control" parent="EyePivot/WarningEyePair" unique_id=1935415479]
+[node name="LeftWarning" type="Control" parent="EyePivot/WarningEyePair" unique_id=1935415479 node_paths=PackedStringArray("sprite")]
 visible = false
 z_index = 1
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 mouse_filter = 2
-script = ExtResource("5_bgx15")
+script = ExtResource("2_mvy52")
+sprite = NodePath("LeftEye")
 
 [node name="LeftEye" type="Sprite2D" parent="EyePivot/WarningEyePair/LeftWarning" unique_id=1880698994]
 texture = ExtResource("2_oryvq")
@@ -579,13 +577,14 @@ centered = false
 flip_h = true
 hframes = 12
 
-[node name="RightWarning" type="Control" parent="EyePivot/WarningEyePair" unique_id=2128039511]
+[node name="RightWarning" type="Control" parent="EyePivot/WarningEyePair" unique_id=2128039511 node_paths=PackedStringArray("sprite")]
 visible = false
 z_index = 1
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 mouse_filter = 2
-script = ExtResource("6_pvir1")
+script = ExtResource("2_mvy52")
+sprite = NodePath("RightEye")
 
 [node name="RightEye" type="Sprite2D" parent="EyePivot/WarningEyePair/RightWarning" unique_id=100789365]
 texture = ExtResource("2_oryvq")

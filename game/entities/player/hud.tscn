@@ -2,13 +2,10 @@
 
 [ext_resource type="Script" uid="uid://daqh4fb7b8wv8" path="res://game/entities/player/hud.gd" id="1_uqxry"]
 [ext_resource type="Shader" uid="uid://baggmlrn5oa28" path="res://game/entities/player/hud.gdshader" id="2_43e7t"]
-[ext_resource type="Texture2D" uid="uid://bkkadmweoxjm7" path="res://game/entities/player/Sprite-Eyelid.png" id="2_ksls2"]
+[ext_resource type="Texture2D" uid="uid://bkkadmweoxjm7" path="res://game/entities/player/player_sprites/Sprite-Eyelid.png" id="2_ksls2"]
 [ext_resource type="Script" uid="uid://bpwrv35osk88r" path="res://game/entities/player/eigengrau_overlay.gd" id="3_eeqgp"]
-[ext_resource type="Script" uid="uid://dyjpv3k1m4w48" path="res://game/entities/player/left_eyelid.gd" id="3_morwl"]
-[ext_resource type="Script" uid="uid://druhwohejplt0" path="res://game/entities/player/right_eyelid.gd" id="4_y50hj"]
-[ext_resource type="Script" uid="uid://i2i2wqtncgun" path="res://game/entities/player/player_score.gd" id="5_tetkd"]
-[ext_resource type="Texture2D" uid="uid://dcy64yov7rglm" path="res://game/entities/player/particle.png" id="6_shwo4"]
-[ext_resource type="Script" uid="uid://dkvsijjii1cbj" path="res://game/entities/player/gpu_particles_2d.gd" id="7_tklkg"]
+[ext_resource type="Script" uid="uid://5dev8t4qmuya" path="res://game/entities/player/eyelid_resize.gd" id="3_shwo4"]
+[ext_resource type="Texture2D" uid="uid://dcy64yov7rglm" path="res://game/entities/player/player_sprites/particle.png" id="6_shwo4"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_eeqgp"]
 shader = ExtResource("2_43e7t")
@@ -230,7 +227,6 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="Left" type="Control" parent="EyePair" unique_id=216047795]
-unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -240,14 +236,13 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="LeftEyelid" type="Sprite2D" parent="EyePair/Left" unique_id=1452193826]
-scale = Vector2(0.0078125, 0.0078125)
+scale = Vector2(7.28125, 3.2773438)
 texture = ExtResource("2_ksls2")
 flip_h = true
 hframes = 7
-script = ExtResource("3_morwl")
+script = ExtResource("3_shwo4")
 
 [node name="Right" type="Control" parent="EyePair" unique_id=1999915363]
-unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -257,10 +252,10 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="RightEyelid" type="Sprite2D" parent="EyePair/Right" unique_id=2062479485]
-scale = Vector2(0.0078125, 0.0078125)
+scale = Vector2(7.28125, 3.2773438)
 texture = ExtResource("2_ksls2")
 hframes = 7
-script = ExtResource("4_y50hj")
+script = ExtResource("3_shwo4")
 
 [node name="EigengrauOverlay" type="ColorRect" parent="." unique_id=456515336]
 material = SubResource("ShaderMaterial_eeqgp")
@@ -291,16 +286,15 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 45
 text = "0"
 horizontal_alignment = 1
-script = ExtResource("5_tetkd")
 
-[node name="GPUParticles2D" type="GPUParticles2D" parent="ScorePadding/PlayerScore" unique_id=1061304468]
+[node name="PlayerParticles" type="GPUParticles2D" parent="ScorePadding/PlayerScore" unique_id=1061304468]
+unique_name_in_owner = true
 position = Vector2(-12, 0)
 emitting = false
 amount = 50
 texture = ExtResource("6_shwo4")
 lifetime = 0.75
 process_material = SubResource("ParticleProcessMaterial_y50hj")
-script = ExtResource("7_tklkg")
 
 [node name="EnemyScore" type="Label" parent="ScorePadding" unique_id=1905587817]
 unique_name_in_owner = true
