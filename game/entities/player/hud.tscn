@@ -236,7 +236,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="LeftEyelid" type="Sprite2D" parent="EyePair/Left" unique_id=1452193826]
-scale = Vector2(7.28125, 3.2773438)
+scale = Vector2(7.28125, 4.4804688)
 texture = ExtResource("2_ksls2")
 flip_h = true
 hframes = 7
@@ -252,7 +252,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="RightEyelid" type="Sprite2D" parent="EyePair/Right" unique_id=2062479485]
-scale = Vector2(7.28125, 3.2773438)
+scale = Vector2(7.28125, 4.4804688)
 texture = ExtResource("2_ksls2")
 hframes = 7
 script = ExtResource("3_shwo4")

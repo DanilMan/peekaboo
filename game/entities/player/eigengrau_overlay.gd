@@ -1,6 +1,4 @@
-class_name EigengrauOverlay
 extends ColorRect
-## Sets visual state of eigengrau shader overlay
 
 # =============================================================================
 # public variables 

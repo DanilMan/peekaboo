@@ -5,16 +5,18 @@ extends Control
 # =============================================================================
 # public variables 
 # =============================================================================
+const EigengrauScript = preload("res://game/entities/player/eigengrau_overlay.gd")
 var player_score_tween: Tween
 var player_score_color_tween: Tween
 var enemy_score_tween: Tween
+
 
 # =============================================================================
 # onready variables
 # =============================================================================
 @onready var player_score: Label = %PlayerScore
 @onready var enemy_score: Label = %EnemyScore
-@onready var eigengrau_overlay: EigengrauOverlay = $EigengrauOverlay
+@onready var eigengrau_overlay: EigengrauScript = $EigengrauOverlay
 @onready var player_particles: GPUParticles2D = %PlayerParticles
 @onready var eyelid_animation_player: AnimationPlayer = $EyelidAnimationPlayer
 
