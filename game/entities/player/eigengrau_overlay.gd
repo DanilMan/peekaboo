@@ -7,7 +7,7 @@ var current_fade: float = 0.0
 var tween: Tween
 
 # =============================================================================
-# onready variables
+# export variables
 # =============================================================================
 @export var fade_in_duration: float = 0.6
 @export var fade_out_duration: float = 0.1

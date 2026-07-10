@@ -30,6 +30,13 @@ var enemy_is_blinking: bool = false
 var rng := RandomNumberGenerator.new()
 
 # =============================================================================
+# export variables
+# =============================================================================
+
+@export var enemy_timer_range: Vector2 # default (3.0, 10.0)
+@export var enemy_blinking_time: float # default 2.0
+
+# =============================================================================
 # onready variables
 # =============================================================================
 @onready var enemy_ui: EnemyUI = $EnemyUI
@@ -41,6 +48,8 @@ var rng := RandomNumberGenerator.new()
 @onready var player_grace_period_timer: Timer = $PlayerGracePeriodTimer
 @onready var game_over_screen: MarginContainer = $GameOverScreen
 @onready var max_score_label: Label = %MaxScore
+
+#@onready var fps: Label = $FPS
 
 # =============================================================================
 # built-in virtual methods
@@ -66,7 +75,7 @@ func _ready() -> void:
 
 func _initialize_enemy_timer() -> void:
 	rng.randomize()
-	var rand_time: int = rng.randi_range(3, 10)
+	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.timeout.connect(_on_enemy_timer_timeout)
 	enemy_timer.start()
@@ -129,6 +138,9 @@ func _notification(what: int) -> void:
 		# forces eyes open in edge case (could switch to pause menu later)
 		Input.action_release("Eyelid")
 
+# check fps
+#func _process(_delta: float) -> void:
+	#fps.text = "FPS: %d" % Engine.get_frames_per_second()
 
 #endregion built-in methods
 
@@ -146,8 +158,8 @@ func _on_enemy_timer_timeout() -> void:
 	if not enemy_is_blinking:
 		# timer just ended and enemy is staring so start 1 second blink
 		enemy_is_blinking = true
-		enemy_ui.play_blinking()
-		enemy_timer.start(2) # hard coded!!!!!!!!!!!!!!!!!!!!!
+		enemy_ui.play_blinking(enemy_blinking_time)
+		enemy_timer.start(enemy_blinking_time)
 	else:
 		# 1 second blink ended toggle enemy eye state
 		enemy_is_blinking = false
@@ -157,7 +169,7 @@ func _on_enemy_timer_timeout() -> void:
 func _toggle_enemy_eye_state() -> void:
 	_toggle_enemy_eyes()
 	_evaluate_eyes_state(false)
-	var rand_time: int = rng.randi_range(3, 10) # hard coded!!!!!!!!!!!!!!
+	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.start()
 
@@ -214,28 +226,30 @@ func _change_game_state(new_state: GameState) -> void:
 	match current_state:
 		GameState.ENEMY_STARING:
 			# increase enemy points
-			enemy_ui.play_piercing()
+			enemy_ui.play_piercing(enemy_piercing_timer.wait_time)
 			enemy_piercing_timer.start()
 			enemy_score = 0
 			hud.set_enemy_score(enemy_score)
-			hud.show_enemey_score()
+			hud.show_enemy_score()
 			enemy_point_timer.start()
 			player_grace_period_timer.stop()
 		GameState.PLAYER_STARING:
 			# increase player points
 			player_point_timer.start()
-			hud.hide_enemey_score()
+			hud.hide_enemy_score()
 			hud.white_player_score()
 		GameState.ENEMY_ATTACK:
 			# player has second(s) to close eyes or game over
-			enemy_ui.play_attack()
+			enemy_ui.play_attack(player_grace_period_timer.wait_time)
 			player_grace_period_timer.start()
 		GameState.PLAYER_ATTACK:
 			# enemy will close eyes within a second
 			# Add previous state check to see if enemy was blinking to steal points.
 			if enemy_is_blinking:
+				var prev_player_score: int = player_score
 				player_score += _get_enemy_mult_score()
-				hud.set_player_score(player_score)
+				#hud.set_player_score(player_score)
+				hud.tween_player_score(prev_player_score, player_score, player_point_timer.wait_time)
 			enemy_timer.stop()
 			enemy_is_blinking = false
 			_toggle_enemy_eye_state()
@@ -256,9 +270,10 @@ func _on_enemy_piercing_timer_timeout() -> void:
 
 
 func _on_player_score_tick() -> void:
+	var prev_player_score: int = player_score
 	player_score_mult += 1
 	player_score += player_score_mult
-	hud.set_player_score(player_score)
+	hud.tween_player_score(prev_player_score, player_score, player_point_timer.wait_time)
 	hud.pop_player_score()
 	_update_max_score()
 
@@ -280,11 +295,13 @@ func _on_player_grace_period_timeout() -> void:
 
 #endregion timer helper methods
 func _enemy_scores_event() -> void:
+	var prev_player_score: int = player_score
 	player_score -= _get_enemy_mult_score()
+	hud.hide_enemy_score()
 	if player_score < 0:
 		_change_game_state(GameState.GAME_OVER)
-	hud.set_player_score(player_score)
-	hud.hide_enemey_score()
+	#hud.set_player_score(player_score)
+	hud.tween_player_score(prev_player_score, player_score, player_point_timer.wait_time)
 
 
 # stop all timers on Game Over UI
@@ -323,8 +340,11 @@ func _get_base_10_log(num: int) -> int:
 # Maybe create menu screen and allow player to check or uncheck toggle spacebar for different
 # player styles.
 
+# Make player point increment dependent on player score.
+
 # Eigengrau shader needs tweaking. Also, maybe try adding it to Eyelid(s) instead. STAMINA BAR!!!!
 # Particles that fall down the screen, looking like dust in the darkness.
+# Fix optimization for shader too.
 
 # As game stands in current state, it is unclear to non-gamer player what game is. Player repeatedly
 # smashed spacebar "the monkey at the keyboard." Didn't understand why they kept losing and what

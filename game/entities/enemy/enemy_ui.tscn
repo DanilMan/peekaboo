@@ -572,6 +572,7 @@ script = ExtResource("2_mvy52")
 sprite = NodePath("LeftEye")
 
 [node name="LeftEye" type="Sprite2D" parent="EyePivot/WarningEyePair/LeftWarning" unique_id=1880698994]
+self_modulate = Color(1, 1, 1, 0.07843137)
 texture = ExtResource("2_oryvq")
 centered = false
 flip_h = true
@@ -587,6 +588,7 @@ script = ExtResource("2_mvy52")
 sprite = NodePath("RightEye")
 
 [node name="RightEye" type="Sprite2D" parent="EyePivot/WarningEyePair/RightWarning" unique_id=100789365]
+self_modulate = Color(1, 1, 1, 0.07843137)
 texture = ExtResource("2_oryvq")
 centered = false
 hframes = 12

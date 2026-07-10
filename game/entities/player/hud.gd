@@ -7,8 +7,9 @@ extends Control
 # =============================================================================
 const EigengrauScript = preload("res://game/entities/player/eigengrau_overlay.gd")
 var player_score_tween: Tween
+var player_score_pop_tween: Tween
 var player_score_color_tween: Tween
-var enemy_score_tween: Tween
+var enemy_score_pop_tween: Tween
 
 
 # =============================================================================
@@ -40,26 +41,36 @@ func set_player_score(val: int) -> void:
 	player_score.text = str(val)
 
 
+func tween_player_score(curr_val: int, targ_val: int, time: float) -> void:
+	if player_score_tween and player_score_tween.is_valid():
+		player_score_tween.kill()
+	
+	player_score_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	
+	player_score_tween.tween_method(set_player_score, curr_val, targ_val, time)
+
 func pop_player_score() -> void:
 	player_score.pivot_offset = player_score.size / 2.0 # set center of label
 	
 	emit_player_particles()
 	
-	if player_score_tween and player_score_tween.is_valid():
-		player_score_tween.kill()
+	if player_score_pop_tween and player_score_pop_tween.is_valid():
+		player_score_pop_tween.kill()
 	
-	player_score_tween = create_tween()
+	player_score_pop_tween = create_tween()
 	
 	# tween scale label up by 0.05 and color green
-	player_score_tween.tween_property(player_score, "scale", Vector2(1.05, 1.05), 0.05) \
-	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	player_score_tween.parallel().tween_property(player_score,
-	"theme_override_colors/font_color", Color(0.702, 1.0, 0.675, 1.0), 0.05)
+	player_score_pop_tween.tween_property(player_score, "scale", Vector2(1.05, 1.05), 0.05) \
+	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	player_score_pop_tween.parallel().tween_property(player_score,
+	"theme_override_colors/font_color", Color(0.702, 1.0, 0.675, 1.0), 0.05) \
+	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	# tween scale label down to original state adn color white
-	player_score_tween.tween_property(player_score, "scale", Vector2(1.0, 1.0), 0.05) \
+	player_score_pop_tween.tween_property(player_score, "scale", Vector2(1.0, 1.0), 0.05) \
 	.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	player_score_tween.parallel().tween_property(player_score,
-	"theme_override_colors/font_color", Color(1.0, 1.0, 1.0, 1.0), 0.05)
+	player_score_pop_tween.parallel().tween_property(player_score,
+	"theme_override_colors/font_color", Color(1.0, 1.0, 1.0, 1.0), 0.05) \
+	.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 
 
 func emit_player_particles() -> void:
@@ -81,7 +92,7 @@ func grey_player_score() -> void:
 	player_score_color_tween = create_tween()
 	
 	player_score_color_tween.tween_property(player_score, "modulate", Color("686868"), 0.05) \
-	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 
 
 func white_player_score() -> void:
@@ -91,18 +102,18 @@ func white_player_score() -> void:
 	player_score_color_tween = create_tween()
 	
 	player_score_color_tween.tween_property(player_score, "modulate", Color("ffffff"), 0.05) \
-	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 
 
 func hide_player_score() -> void:
 	player_score.visible = false
 
 
-func show_enemey_score() -> void:
+func show_enemy_score() -> void:
 	enemy_score.visible = true
 
 
-func hide_enemey_score() -> void:
+func hide_enemy_score() -> void:
 	enemy_score.visible = false
 
 
@@ -113,16 +124,16 @@ func set_enemy_score(val: int) -> void:
 func pop_enemy_score() -> void:
 	enemy_score.pivot_offset = enemy_score.size / 2.0 # set center of label
 	
-	if enemy_score_tween and enemy_score_tween.is_valid():
-		enemy_score_tween.kill()
+	if enemy_score_pop_tween and enemy_score_pop_tween.is_valid():
+		enemy_score_pop_tween.kill()
 	
-	enemy_score_tween = create_tween()
+	enemy_score_pop_tween = create_tween()
 	
 	# tween scale up by 0.2
-	enemy_score_tween.tween_property(enemy_score, "scale", Vector2(1.2, 1.2), 0.5) \
-	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	enemy_score_pop_tween.tween_property(enemy_score, "scale", Vector2(1.2, 1.2), 0.5) \
+	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	# tween scale back to original state
-	enemy_score_tween.tween_property(enemy_score, "scale", Vector2(1.0, 1.0), 0.5) \
+	enemy_score_pop_tween.tween_property(enemy_score, "scale", Vector2(1.0, 1.0), 0.5) \
 	.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 
 

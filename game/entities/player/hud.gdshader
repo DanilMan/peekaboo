@@ -1,7 +1,7 @@
 shader_type canvas_item;
 
 uniform vec4 eigengrau_color : source_color = vec4(0.07, 0.07, 0.09, 1.0);
-uniform float static_intensity : hint_range(0.0, 1.0) = 0.05;
+uniform float static_intensity : hint_range(0.0, 1.0) = 0.5;
 uniform float animation_speed = 12.0;
 uniform vec2 virtual_resolution = vec2(320.0, 180.0);
 uniform float fade : hint_range(0.0, 1.0) = 0.0;
