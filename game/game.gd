@@ -58,7 +58,7 @@ var rng := RandomNumberGenerator.new()
 @onready var stamina_timer: Timer = $StaminaTimer
 @onready var game_over_screen: MarginContainer = $GameOverScreen
 @onready var max_score_label: Label = %MaxScore
-@onready var dust_particles: GPUParticles2D = %DustParticles
+#@onready var dust_particles: GPUParticles2D = %DustParticles
 
 #@onready var fps: Label = $FPS
 
@@ -66,52 +66,19 @@ var rng := RandomNumberGenerator.new()
 # built-in virtual methods
 # =============================================================================
 #region built-in methods
+
 #region _ready
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	#get_window().grab_focus() #TRY THIS FIRST FOR MOUSE FIRST CLICK NOT CAPTURED!!!!!!
-	#DisplayServer.window_request_attention() ## TRY THIS!!!!!!!!
-	#DisplayServer.window_move_to_foreground() ### TRY THIS 2!!!!!!!!
-	
-	_initialize_enemy_timer()
-	enemy_piercing_timer.wait_time = enemy_piercing_time
-	enemy_piercing_timer.timeout.connect(_on_enemy_piercing_timer_timeout)
-	player_point_timer.wait_time = player_point_time
-	player_point_timer.timeout.connect(_on_player_score_tick)
-	enemy_point_timer.wait_time = enemy_point_time
-	enemy_point_timer.timeout.connect(_on_enemy_score_tick)
-	player_grace_period_timer.wait_time = player_grace_period_time
-	player_grace_period_timer.timeout.connect(_on_player_grace_period_timeout)
-	stamina_timer.wait_time = stamina_time
-	stamina_timer.timeout.connect(_on_stamina_timeout)
+	_initialize_all_timers()
 	
 	_initialize_game_state()
 	
 	hud.open_eye() # initialize player eyes open 
 
 
-func _initialize_enemy_timer() -> void:
-	rng.randomize()
-	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y)
-	enemy_timer.wait_time = rand_time
-	enemy_timer.timeout.connect(_on_enemy_timer_timeout)
-	enemy_timer.start()
-
-
-func _initialize_game_state() -> void:
-	var starting_state: GameState
-	if player_eyelids_closed and enemy_eyes_closed:
-		starting_state = GameState.CLOSED
-	elif not player_eyelids_closed and enemy_eyes_closed:
-		starting_state = GameState.PLAYER_STARING
-	elif player_eyelids_closed and not enemy_eyes_closed:
-		starting_state = GameState.ENEMY_STARING
-	elif not player_eyelids_closed and not enemy_eyes_closed:
-		starting_state = GameState.ENEMY_ATTACK
-	_change_game_state(starting_state)
-
-
 #endregion _ready
+
 #region player input
 # input method to open or close player eyes and game over input
 func _unhandled_input(event: InputEvent) -> void:
@@ -125,61 +92,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		_open_player_eyes()
 
 
-# helper methods of _unhandled_input
-func _close_player_eyes() -> void:
-	if player_eyelids_closed:
-		return
-	
-	var stamina_delta: int = Time.get_ticks_msec() - p_stamina_timestamp
-	stamina_delta /= round(100.0 / stamina_rate)
-	player_stamina = clampf(player_stamina + stamina_delta, 0.0, 100.0)
-	
-	if player_stamina <= 0.0:
-		return
-	
-	dust_particles.restart()
-	dust_particles.emitting = false
-	
-	stamina_timer.start()
-	hud.set_stamina_bars(player_stamina)
-	hud.show_stamina_bars()
-	
-	player_eyelids_closed = true
-	player_score_mult = 0
-	hud.close_eye()
-	_evaluate_eyes_state(true)
-
-
-func _open_player_eyes() -> void:
-	if not player_eyelids_closed:
-		return
-	
-	if not enemy_piercing_timer.is_stopped():
-		_change_game_state(GameState.GAME_OVER)
-		return
-	
-	dust_particles.emitting = true
-	
-	hud.hide_stamina_bars()
-	stamina_timer.stop()
-	p_stamina_timestamp = Time.get_ticks_msec()
-	
-	
-	player_eyelids_closed = false
-	hud.open_eye()
-	_evaluate_eyes_state(true)
-
-
 #endregion player input
+
 # --- App Out of Focus ---
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		# forces eyes open in edge case (could switch to pause menu later)
 		Input.action_release("Eyelid")
 
+
 # check fps
 #func _process(_delta: float) -> void:
 	#fps.text = "FPS: %d" % Engine.get_frames_per_second()
+
 
 #endregion built-in methods
 
@@ -187,43 +112,6 @@ func _notification(what: int) -> void:
 # helper methods
 # =============================================================================
 #region helper methods
-# toggles enemy eyes and resets enemy_timer with rand cooldown
-func _on_enemy_timer_timeout() -> void:
-	if current_state != GameState.ENEMY_STARING:
-		# enemy eyes are about to open after eyes are toggled
-		enemy_is_blinking = false
-		_toggle_enemy_eye_state(enemy_blinking_time)
-		return
-	
-	if not enemy_is_blinking:
-		# timer just ended and enemy is staring so start 1 second blink
-		enemy_is_blinking = true
-		enemy_ui.play_blinking(enemy_blinking_time)
-		enemy_timer.start(enemy_blinking_time)
-	else:
-		# 1 second blink ended toggle enemy eye state
-		enemy_is_blinking = false
-		_toggle_enemy_eye_state()
-
-
-func _toggle_enemy_eye_state(dec_range: float = 0.0) -> void:
-	_toggle_enemy_eyes()
-	_evaluate_eyes_state(false)
-	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y - dec_range)
-	enemy_timer.wait_time = rand_time
-	enemy_timer.start()
-
-
-func _toggle_enemy_eyes() -> void:
-	if enemy_eyes_closed:
-		enemy_ui.play_opening()
-		enemy_ui.queue_open()
-		enemy_eyes_closed = false
-	else:
-		enemy_ui.play_closing()
-		enemy_ui.queue_close()
-		enemy_eyes_closed = true
-
 
 #region game state logic
 # game state handling
@@ -307,7 +195,31 @@ func _change_game_state(new_state: GameState) -> void:
 
 
 #endregion game state logic
+
 #region timer helper methods
+func _initialize_all_timers() -> void:
+	_initialize_enemy_timer()
+	enemy_piercing_timer.wait_time = enemy_piercing_time
+	enemy_piercing_timer.timeout.connect(_on_enemy_piercing_timer_timeout)
+	player_point_timer.wait_time = player_point_time
+	player_point_timer.timeout.connect(_on_player_score_tick)
+	enemy_point_timer.wait_time = enemy_point_time
+	enemy_point_timer.timeout.connect(_on_enemy_score_tick)
+	player_grace_period_timer.wait_time = player_grace_period_time
+	player_grace_period_timer.timeout.connect(_on_player_grace_period_timeout)
+	stamina_timer.wait_time = stamina_time
+	stamina_timer.timeout.connect(_on_stamina_timeout)
+
+
+func _initialize_enemy_timer() -> void:
+	rng.randomize()
+	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y)
+	enemy_timer.wait_time = rand_time
+	enemy_timer.timeout.connect(_on_enemy_timer_timeout)
+	enemy_timer.start()
+
+
+
 func _on_enemy_piercing_timer_timeout() -> void:
 	enemy_ui.stop_warnings()
 
@@ -335,21 +247,10 @@ func _on_player_grace_period_timeout() -> void:
 
 
 func _on_stamina_timeout() -> void:
-	player_stamina = clampf(player_stamina - stamina_dec, 0.0, 100.0)
+	player_stamina = maxf(player_stamina - stamina_dec, 0.0) # make sure points can't go negative
 	hud.set_stamina_bars(player_stamina)
 	if player_stamina <= 0.0:
 		_open_player_eyes()
-
-
-#endregion timer helper methods
-func _enemy_scores_event() -> void:
-	var prev_player_score: int = player_score
-	player_score -= _get_enemy_mult_score()
-	hud.hide_enemy_score()
-	if player_score < 0:
-		_change_game_state(GameState.GAME_OVER)
-	#hud.set_player_score(player_score)
-	hud.tween_player_score(prev_player_score, player_score, player_point_time)
 
 
 # stop all timers on Game Over UI
@@ -360,6 +261,108 @@ func _stop_all_timers() -> void:
 	enemy_point_timer.stop()
 	player_grace_period_timer.stop()
 	stamina_timer.stop()
+
+
+#endregion timer helper methods
+
+func _initialize_game_state() -> void:
+	var starting_state: GameState
+	if player_eyelids_closed and enemy_eyes_closed:
+		starting_state = GameState.CLOSED
+	elif not player_eyelids_closed and enemy_eyes_closed:
+		starting_state = GameState.PLAYER_STARING
+	elif player_eyelids_closed and not enemy_eyes_closed:
+		starting_state = GameState.ENEMY_STARING
+	elif not player_eyelids_closed and not enemy_eyes_closed:
+		starting_state = GameState.ENEMY_ATTACK
+	_change_game_state(starting_state)
+
+
+# helper methods of _unhandled_input
+func _close_player_eyes() -> void:
+	if player_eyelids_closed:
+		return
+	
+	var stamina_delta: int = Time.get_ticks_msec() - p_stamina_timestamp
+	stamina_delta /= round(100.0 / stamina_rate)
+	player_stamina = minf(player_stamina + stamina_delta, 100.0) # make sure stamina stays <= 100
+	
+	if player_stamina <= 0.0:
+		return
+	
+	stamina_timer.start()
+	hud.set_stamina_bars(player_stamina)
+	hud.show_stamina_bars()
+	
+	player_eyelids_closed = true
+	player_score_mult = 0
+	hud.close_eye()
+	_evaluate_eyes_state(true)
+
+
+func _open_player_eyes() -> void:
+	if not player_eyelids_closed:
+		return
+	
+	if not enemy_piercing_timer.is_stopped():
+		_change_game_state(GameState.GAME_OVER)
+		return
+	
+	hud.hide_stamina_bars()
+	stamina_timer.stop()
+	p_stamina_timestamp = Time.get_ticks_msec()
+	
+	
+	player_eyelids_closed = false
+	hud.open_eye()
+	_evaluate_eyes_state(true)
+
+
+# toggles enemy eyes and resets enemy_timer with rand cooldown
+func _on_enemy_timer_timeout() -> void:
+	if current_state != GameState.ENEMY_STARING:
+		# enemy eyes are about to open after eyes are toggled
+		enemy_is_blinking = false
+		_toggle_enemy_eye_state(enemy_blinking_time)
+		return
+	
+	if not enemy_is_blinking:
+		# timer just ended and enemy is staring so start 1 second blink
+		enemy_is_blinking = true
+		enemy_ui.play_blinking(enemy_blinking_time)
+		enemy_timer.start(enemy_blinking_time)
+	else:
+		# 1 second blink ended toggle enemy eye state
+		enemy_is_blinking = false
+		_toggle_enemy_eye_state()
+
+
+func _toggle_enemy_eye_state(dec_range: float = 0.0) -> void:
+	_toggle_enemy_eyes()
+	_evaluate_eyes_state(false)
+	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y - dec_range)
+	enemy_timer.wait_time = rand_time
+	enemy_timer.start()
+
+
+func _toggle_enemy_eyes() -> void:
+	if enemy_eyes_closed:
+		enemy_ui.play_opening()
+		enemy_ui.queue_open()
+		enemy_eyes_closed = false
+	else:
+		enemy_ui.play_closing()
+		enemy_ui.queue_close()
+		enemy_eyes_closed = true
+
+
+func _enemy_scores_event() -> void:
+	var prev_player_score: int = player_score
+	player_score -= _get_enemy_mult_score()
+	hud.hide_enemy_score()
+	if player_score < 0:
+		_change_game_state(GameState.GAME_OVER)
+	hud.tween_player_score(prev_player_score, player_score, player_point_time)
 
 
 func _get_enemy_mult_score() -> int:

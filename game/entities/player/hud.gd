@@ -7,6 +7,7 @@ extends Control
 # =============================================================================
 const EigengrauScript = preload("res://game/entities/player/eigengrau_overlay.gd")
 var player_score_tween: Tween
+var player_stamina_tween: Tween
 var player_score_pop_tween: Tween
 var player_score_color_tween: Tween
 var enemy_score_pop_tween: Tween
@@ -50,6 +51,17 @@ func flinch_eye() -> void:
 func set_stamina_bars(val: float) -> void:
 	eyelid_stamina_bar_l.value = val
 	eyelid_stamina_bar_r.value = val
+
+
+# NOT Working as hoped, needs to be rethought!!!!!!!!!!!
+#func tween_stamina_bars(curr_val: float, target_val: float, time: float) -> void:
+	#if player_stamina_tween and player_stamina_tween.is_valid():
+		#player_stamina_tween.kill()
+	#
+	#player_stamina_tween = create_tween()
+	#
+	#player_stamina_tween.tween_method(set_stamina_bars, curr_val, target_val, time) \
+	#.set_trans(Tween.TRANS_LINEAR)
 
 
 func show_stamina_bars() -> void:

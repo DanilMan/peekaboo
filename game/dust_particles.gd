@@ -21,4 +21,5 @@ func _resize_sprite_to_screen() -> void:
 	var screen_size: Vector2 = get_viewport().get_visible_rect().size
 	var particle_material := process_material as ParticleProcessMaterial
 	if particle_material:
-		particle_material.emission_box_extents = Vector3(screen_size.x, screen_size.y, 0.0)
+		particle_material.emission_box_extents = Vector3(screen_size.x/2, screen_size.y/2, 0.0)
+		# This is imperfect. Find a better way to set screen emission box extents!!!!!!!!!!!!!!!
