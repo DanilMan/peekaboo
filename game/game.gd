@@ -19,6 +19,8 @@ enum GameState {
 # public variables 
 # =============================================================================
 var player_score: int = 0
+var player_stamina: float = 100.0
+var p_stamina_timestamp: int = 0
 var player_score_mult: int = 0
 var max_score: int = 0
 var enemy_score: int = 0
@@ -33,8 +35,15 @@ var rng := RandomNumberGenerator.new()
 # export variables
 # =============================================================================
 
-@export var enemy_timer_range: Vector2 # default (3.0, 10.0)
-@export var enemy_blinking_time: float # default 2.0
+@export var enemy_timer_range := Vector2(3.0, 10.0) # default (3.0, 10.0)
+@export var enemy_blinking_time: float = 2.0 # default 2.0
+@export var enemy_piercing_time: float = 1.0 # default 1.0
+@export var player_point_time: float = 0.1 # deault 0.1
+@export var enemy_point_time: float = 1.0 # deault 1.0
+@export var player_grace_period_time: float = 2.0 # deault 2.0
+@export var stamina_time: float = 0.1 # default 0.1
+@export var stamina_dec: float = 1 # default 1
+@export var stamina_rate: float = 2.0 # default 2.0
 
 # =============================================================================
 # onready variables
@@ -46,8 +55,10 @@ var rng := RandomNumberGenerator.new()
 @onready var player_point_timer: Timer = $PlayerPointTimer
 @onready var enemy_point_timer: Timer = $EnemyPointTimer
 @onready var player_grace_period_timer: Timer = $PlayerGracePeriodTimer
+@onready var stamina_timer: Timer = $StaminaTimer
 @onready var game_over_screen: MarginContainer = $GameOverScreen
 @onready var max_score_label: Label = %MaxScore
+@onready var dust_particles: GPUParticles2D = %DustParticles
 
 #@onready var fps: Label = $FPS
 
@@ -63,10 +74,16 @@ func _ready() -> void:
 	#DisplayServer.window_move_to_foreground() ### TRY THIS 2!!!!!!!!
 	
 	_initialize_enemy_timer()
+	enemy_piercing_timer.wait_time = enemy_piercing_time
 	enemy_piercing_timer.timeout.connect(_on_enemy_piercing_timer_timeout)
+	player_point_timer.wait_time = player_point_time
 	player_point_timer.timeout.connect(_on_player_score_tick)
+	enemy_point_timer.wait_time = enemy_point_time
 	enemy_point_timer.timeout.connect(_on_enemy_score_tick)
+	player_grace_period_timer.wait_time = player_grace_period_time
 	player_grace_period_timer.timeout.connect(_on_player_grace_period_timeout)
+	stamina_timer.wait_time = stamina_time
+	stamina_timer.timeout.connect(_on_stamina_timeout)
 	
 	_initialize_game_state()
 	
@@ -112,6 +129,21 @@ func _unhandled_input(event: InputEvent) -> void:
 func _close_player_eyes() -> void:
 	if player_eyelids_closed:
 		return
+	
+	var stamina_delta: int = Time.get_ticks_msec() - p_stamina_timestamp
+	stamina_delta /= round(100.0 / stamina_rate)
+	player_stamina = clampf(player_stamina + stamina_delta, 0.0, 100.0)
+	
+	if player_stamina <= 0.0:
+		return
+	
+	dust_particles.restart()
+	dust_particles.emitting = false
+	
+	stamina_timer.start()
+	hud.set_stamina_bars(player_stamina)
+	hud.show_stamina_bars()
+	
 	player_eyelids_closed = true
 	player_score_mult = 0
 	hud.close_eye()
@@ -125,6 +157,13 @@ func _open_player_eyes() -> void:
 	if not enemy_piercing_timer.is_stopped():
 		_change_game_state(GameState.GAME_OVER)
 		return
+	
+	dust_particles.emitting = true
+	
+	hud.hide_stamina_bars()
+	stamina_timer.stop()
+	p_stamina_timestamp = Time.get_ticks_msec()
+	
 	
 	player_eyelids_closed = false
 	hud.open_eye()
@@ -151,8 +190,9 @@ func _notification(what: int) -> void:
 # toggles enemy eyes and resets enemy_timer with rand cooldown
 func _on_enemy_timer_timeout() -> void:
 	if current_state != GameState.ENEMY_STARING:
+		# enemy eyes are about to open after eyes are toggled
 		enemy_is_blinking = false
-		_toggle_enemy_eye_state()
+		_toggle_enemy_eye_state(enemy_blinking_time)
 		return
 	
 	if not enemy_is_blinking:
@@ -166,10 +206,10 @@ func _on_enemy_timer_timeout() -> void:
 		_toggle_enemy_eye_state()
 
 
-func _toggle_enemy_eye_state() -> void:
+func _toggle_enemy_eye_state(dec_range: float = 0.0) -> void:
 	_toggle_enemy_eyes()
 	_evaluate_eyes_state(false)
-	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y)
+	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y - dec_range)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.start()
 
@@ -223,10 +263,12 @@ func _change_game_state(new_state: GameState) -> void:
 	
 	hud.grey_player_score()
 	
+	_update_max_score()
+	
 	match current_state:
 		GameState.ENEMY_STARING:
 			# increase enemy points
-			enemy_ui.play_piercing(enemy_piercing_timer.wait_time)
+			enemy_ui.play_piercing(enemy_piercing_time)
 			enemy_piercing_timer.start()
 			enemy_score = 0
 			hud.set_enemy_score(enemy_score)
@@ -240,16 +282,16 @@ func _change_game_state(new_state: GameState) -> void:
 			hud.white_player_score()
 		GameState.ENEMY_ATTACK:
 			# player has second(s) to close eyes or game over
-			enemy_ui.play_attack(player_grace_period_timer.wait_time)
+			enemy_ui.play_attack(player_grace_period_time)
+			hud.flinch_eye()
 			player_grace_period_timer.start()
 		GameState.PLAYER_ATTACK:
 			# enemy will close eyes within a second
-			# Add previous state check to see if enemy was blinking to steal points.
 			if enemy_is_blinking:
 				var prev_player_score: int = player_score
 				player_score += _get_enemy_mult_score()
-				#hud.set_player_score(player_score)
-				hud.tween_player_score(prev_player_score, player_score, player_point_timer.wait_time)
+				_update_max_score()
+				hud.tween_player_score(prev_player_score, player_score, player_point_time)
 			enemy_timer.stop()
 			enemy_is_blinking = false
 			_toggle_enemy_eye_state()
@@ -259,7 +301,8 @@ func _change_game_state(new_state: GameState) -> void:
 		GameState.GAME_OVER:
 			max_score_label.text = "Max Score: " + str(max_score)
 			game_over_screen.visible = true
-			hud.hide_player_score()
+			hud.stop_hud()
+			enemy_ui.stop_enemy_ui()
 			_stop_all_timers()
 
 
@@ -271,16 +314,14 @@ func _on_enemy_piercing_timer_timeout() -> void:
 
 func _on_player_score_tick() -> void:
 	var prev_player_score: int = player_score
-	player_score_mult += 1
+	player_score_mult += 1 + _get_base_10_log(player_score)
 	player_score += player_score_mult
-	hud.tween_player_score(prev_player_score, player_score, player_point_timer.wait_time)
+	hud.tween_player_score(prev_player_score, player_score, player_point_time)
 	hud.pop_player_score()
-	_update_max_score()
 
 
 func _update_max_score() -> void:
-	if player_score > max_score:
-		max_score = player_score
+	max_score = maxi(player_score, max_score)
 
 
 func _on_enemy_score_tick() -> void:
@@ -293,6 +334,13 @@ func _on_player_grace_period_timeout() -> void:
 	_change_game_state(GameState.GAME_OVER)
 
 
+func _on_stamina_timeout() -> void:
+	player_stamina = clampf(player_stamina - stamina_dec, 0.0, 100.0)
+	hud.set_stamina_bars(player_stamina)
+	if player_stamina <= 0.0:
+		_open_player_eyes()
+
+
 #endregion timer helper methods
 func _enemy_scores_event() -> void:
 	var prev_player_score: int = player_score
@@ -301,7 +349,7 @@ func _enemy_scores_event() -> void:
 	if player_score < 0:
 		_change_game_state(GameState.GAME_OVER)
 	#hud.set_player_score(player_score)
-	hud.tween_player_score(prev_player_score, player_score, player_point_timer.wait_time)
+	hud.tween_player_score(prev_player_score, player_score, player_point_time)
 
 
 # stop all timers on Game Over UI
@@ -311,6 +359,7 @@ func _stop_all_timers() -> void:
 	player_point_timer.stop()
 	enemy_point_timer.stop()
 	player_grace_period_timer.stop()
+	stamina_timer.stop()
 
 
 func _get_enemy_mult_score() -> int:
@@ -320,7 +369,7 @@ func _get_enemy_mult_score() -> int:
 func _get_base_10_log(num: int) -> int:
 	if num <= 0:
 		return 0
-	return floor(log(num) / log(10))
+	return floori(log(num) / log(10.0))
 
 
 #endregion helper methods

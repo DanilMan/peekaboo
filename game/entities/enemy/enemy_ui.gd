@@ -64,3 +64,6 @@ func get_anim_scale(time: float, length: float) -> float:
 		return length / time
 	else:
 		return 1.0
+
+func stop_enemy_ui() -> void:
+	stop_warnings()

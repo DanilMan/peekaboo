@@ -11,6 +11,11 @@ var player_score_pop_tween: Tween
 var player_score_color_tween: Tween
 var enemy_score_pop_tween: Tween
 
+# =============================================================================
+# export variables
+# =============================================================================
+
+@export var color_inc: float = 0.005
 
 # =============================================================================
 # onready variables
@@ -20,6 +25,8 @@ var enemy_score_pop_tween: Tween
 @onready var eigengrau_overlay: EigengrauScript = $EigengrauOverlay
 @onready var player_particles: GPUParticles2D = %PlayerParticles
 @onready var eyelid_animation_player: AnimationPlayer = $EyelidAnimationPlayer
+@onready var eyelid_stamina_bar_l: ProgressBar = $EyelidStaminaBarL
+@onready var eyelid_stamina_bar_r: ProgressBar = $EyelidStaminaBarR
 
 # =============================================================================
 # helper methods
@@ -35,7 +42,27 @@ func open_eye() -> void:
 	eigengrau_overlay.set_fade(false)
 
 
+func flinch_eye() -> void:
+	eyelid_animation_player.play("flinching")
+
 #endregion eyelid animations
+#region eyelid stamina bar
+func set_stamina_bars(val: float) -> void:
+	eyelid_stamina_bar_l.value = val
+	eyelid_stamina_bar_r.value = val
+
+
+func show_stamina_bars() -> void:
+	eyelid_stamina_bar_l.visible = true
+	eyelid_stamina_bar_r.visible = true
+
+
+func hide_stamina_bars() -> void:
+	eyelid_stamina_bar_l.visible = false
+	eyelid_stamina_bar_r.visible = false
+
+
+#endregion eyelid stamina bar
 #region game scores
 func set_player_score(val: int) -> void:
 	player_score.text = str(val)
@@ -59,17 +86,18 @@ func pop_player_score() -> void:
 	
 	player_score_pop_tween = create_tween()
 	
-	# tween scale label up by 0.05 and color green
+	# tween scale label up by 0.05 and increment green
 	player_score_pop_tween.tween_property(player_score, "scale", Vector2(1.05, 1.05), 0.05) \
 	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	
+	var target_color: Color = player_score.get_theme_color("font_color") \
+			- Color(color_inc, 0.0, color_inc, 0.0)
 	player_score_pop_tween.parallel().tween_property(player_score,
-	"theme_override_colors/font_color", Color(0.702, 1.0, 0.675, 1.0), 0.05) \
-	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	# tween scale label down to original state adn color white
-	player_score_pop_tween.tween_property(player_score, "scale", Vector2(1.0, 1.0), 0.05) \
+	"theme_override_colors/font_color", target_color, 0.05) \
 	.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	player_score_pop_tween.parallel().tween_property(player_score,
-	"theme_override_colors/font_color", Color(1.0, 1.0, 1.0, 1.0), 0.05) \
+	
+	# tween scale label down to original state
+	player_score_pop_tween.tween_property(player_score, "scale", Vector2(1.0, 1.0), 0.05) \
 	.set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 
 
@@ -91,7 +119,8 @@ func grey_player_score() -> void:
 	
 	player_score_color_tween = create_tween()
 	
-	player_score_color_tween.tween_property(player_score, "modulate", Color("686868"), 0.05) \
+	player_score_color_tween.tween_property(player_score, "theme_override_colors/font_color",
+			Color("686868"), 0.05) \
 	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 
 
@@ -101,7 +130,8 @@ func white_player_score() -> void:
 		
 	player_score_color_tween = create_tween()
 	
-	player_score_color_tween.tween_property(player_score, "modulate", Color("ffffff"), 0.05) \
+	player_score_color_tween.tween_property(player_score, "theme_override_colors/font_color",
+			Color("ffffff"), 0.05) \
 	.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 
 
@@ -138,3 +168,8 @@ func pop_enemy_score() -> void:
 
 
 #endregion game scores
+
+func stop_hud() -> void:
+	hide_player_score()
+	hide_enemy_score()
+	hide_stamina_bars()
