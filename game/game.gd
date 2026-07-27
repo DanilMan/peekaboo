@@ -25,7 +25,6 @@ var player_score_mult: int = 0
 var max_score: int = 0
 var enemy_score: int = 0
 var current_state: GameState = GameState.CLOSED
-var previous_state: GameState = GameState.CLOSED
 var player_eyelids_closed: bool = false
 var enemy_eyes_closed: bool = true
 var enemy_is_blinking: bool = false
@@ -35,6 +34,7 @@ var rng := RandomNumberGenerator.new()
 # export variables
 # =============================================================================
 
+@export var enemy_lerp_skew : float = 2.0 # default 2.0
 @export var enemy_timer_range := Vector2(3.0, 10.0) # default (3.0, 10.0)
 @export var enemy_blinking_time: float = 2.0 # default 2.0
 @export var enemy_piercing_time: float = 1.0 # default 1.0
@@ -140,7 +140,6 @@ func _change_game_state(new_state: GameState) -> void:
 	if current_state == GameState.GAME_OVER:
 		return
 	
-	previous_state = current_state
 	current_state = new_state
 	#print(GameState.find_key(current_state))
 	
@@ -213,7 +212,8 @@ func _initialize_all_timers() -> void:
 
 func _initialize_enemy_timer() -> void:
 	rng.randomize()
-	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y)
+	var rand_time: float = _get_rand_lerpf(enemy_timer_range.x, enemy_timer_range.y,
+			enemy_lerp_skew)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.timeout.connect(_on_enemy_timer_timeout)
 	enemy_timer.start()
@@ -253,7 +253,6 @@ func _on_stamina_timeout() -> void:
 		_open_player_eyes()
 
 
-# stop all timers on Game Over UI
 func _stop_all_timers() -> void:
 	enemy_timer.stop()
 	enemy_piercing_timer.stop()
@@ -340,7 +339,8 @@ func _on_enemy_timer_timeout() -> void:
 func _toggle_enemy_eye_state(dec_range: float = 0.0) -> void:
 	_toggle_enemy_eyes()
 	_evaluate_eyes_state(false)
-	var rand_time: float = rng.randf_range(enemy_timer_range.x, enemy_timer_range.y - dec_range)
+	var rand_time: float = _get_rand_lerpf(enemy_timer_range.x, enemy_timer_range.y - dec_range,
+			enemy_lerp_skew)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.start()
 
@@ -375,6 +375,11 @@ func _get_base_10_log(num: int) -> int:
 	return floori(log(num) / log(10.0))
 
 
+func _get_rand_lerpf(from: float, to: float, power: float) -> float:
+	var weight: float = rng.randf() ** power
+	return lerpf(from, to, weight)
+
+
 #endregion helper methods
 
 # Note to future self:
@@ -392,20 +397,24 @@ func _get_base_10_log(num: int) -> int:
 # Maybe create menu screen and allow player to check or uncheck toggle spacebar for different
 # player styles.
 
-# Make player point increment dependent on player score.
+# Color coding, Eyes, particles, ui.
+# Add lable or particle effect for when large amount of points is added or subtracted from player
+# score.
+# Easy, Medium, Hard modes. Also change pacing of enemy for more lively feel. Use a pow and lerp
+# method to skew the random value.
+# 2 different enemy attacks: Glaring (reopen quickly) and (Piercing hold closed), within enemy
+# attack state. Player doesn't know until they shut their eyes what kind of attack it is. Glaring
+# animation is just the opposite of Piercing.
+# Mini blinking game: single eye sprites that spawn and disappear. If you get all of them before the
+# enemy opens their eyes you get a point bonus for x amount of time.
 
-# Eigengrau shader needs tweaking. Also, maybe try adding it to Eyelid(s) instead. STAMINA BAR!!!!
-# Particles that fall down the screen, looking like dust in the darkness.
+# Eigengrau shader needs tweaking. Also, maybe try adding it to Eyelid(s) instead.
+# Remove texture for point particles.
 # Fix optimization for shader too.
 
-# As game stands in current state, it is unclear to non-gamer player what game is. Player repeatedly
-# smashed spacebar "the monkey at the keyboard." Didn't understand why they kept losing and what
-# they were supposed to do to not lose. Needs more visual and eventually audio communication.
-
-# Add enemy point animation?, particle text for enemy points, player eyelid twitch for enemy attack,
-# spacebar stamina bar, shader for edge of screen glowing blood red when enemied eyes open (bright
-# until peircing ends, then mellow, then bright and blinking along with enemy eye blinks), add enemy
-# eye blink animation speeds up.
+# Add particle text for enemy points?, shader for edge of screen glowing blood red when enemied eyes
+# open (bright until peircing ends, then mellow, then bright and blinking along with enemy eye
+# blinks), add enemy eye blink animation acceleration.
 # Get as much visual information to the player to communicate what the game is. Also
 # maybe add some placeholder sfx.
 
@@ -413,6 +422,6 @@ func _get_base_10_log(num: int) -> int:
 
 # Add monster silhouette that fades in and out at random like a flickering and fading light source
 # allows their face to almost be visible in the darkness, creeping out the plater and giving them
-# something to look at
+# something to look at, as well as the almost detailed background of a room.
 
-# Maybe get rid of Previous State Haven't used it yet...!!!!!!!!!!!!!!!!!!
+# Refactor methods/functions into smaller helper methods/functions

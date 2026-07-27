@@ -30,7 +30,7 @@ gravity = Vector3(0, 0.1, 0)
 scale_min = 2.0
 scale_max = 3.0
 scale_curve = SubResource("CurveTexture_4fuuu")
-color = Color(0.5176471, 0.5176471, 0.5176471, 0.54901963)
+color = Color(0.34901962, 0.34901962, 0.34901962, 0.35686275)
 alpha_curve = SubResource("CurveTexture_dxrkv")
 
 [node name="Game" type="Control" unique_id=290337613]
@@ -68,7 +68,7 @@ grow_vertical = 2
 
 [node name="DustParticles" type="GPUParticles2D" parent="ParticleBox" unique_id=1998743743]
 unique_name_in_owner = true
-amount = 50
+amount = 100
 lifetime = 10.0
 process_material = SubResource("ParticleProcessMaterial_dxrkv")
 script = ExtResource("4_4fuuu")
