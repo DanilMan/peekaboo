@@ -24,8 +24,6 @@ var p_stamina_timestamp: int = 0
 var player_score_mult: int = 0
 var player_open_timestamp: int = 0
 var player_close_timestamp: int = 0
-var player_open_duration: int = 0
-var player_close_duration: int = 0
 var max_score: int = 0
 var enemy_score: int = 0
 var current_state: GameState = GameState.CLOSED
@@ -298,7 +296,8 @@ func _close_player_eyes() -> void:
 	hud.show_stamina_bars()
 	
 	player_close_timestamp = Time.get_ticks_msec()
-	player_open_duration = player_close_timestamp - player_open_timestamp
+	var _player_open_duration: int = player_close_timestamp - player_open_timestamp
+	# set this to an average array !!!!!!!!!!!!!!!!!!!
 	
 	player_eyelids_closed = true
 	player_score_mult = 0
@@ -319,7 +318,8 @@ func _open_player_eyes() -> void:
 	p_stamina_timestamp = Time.get_ticks_msec()
 	
 	player_open_timestamp = Time.get_ticks_msec()
-	player_close_duration = player_open_timestamp - player_close_timestamp
+	var _player_close_duration: int = player_open_timestamp - player_close_timestamp
+	# set this to an average array !!!!!!!!!!!!!!!!!!!
 	
 	player_eyelids_closed = false
 	hud.open_eye()
