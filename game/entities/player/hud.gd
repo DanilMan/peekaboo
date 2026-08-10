@@ -25,6 +25,9 @@ var enemy_score_pop_tween: Tween
 @onready var enemy_score: Label = %EnemyScore
 @onready var eigengrau_overlay: EigengrauScript = $EigengrauOverlay
 @onready var player_particles: GPUParticles2D = %PlayerParticles
+@onready var sub_viewport: SubViewport = %SubViewport
+@onready var bonus: Label = %Bonus
+@onready var score_bonus: GPUParticles2D = %ScoreBonus
 @onready var eyelid_animation_player: AnimationPlayer = $EyelidAnimationPlayer
 @onready var eyelid_stamina_bar_l: ProgressBar = $EyelidStaminaBarL
 @onready var eyelid_stamina_bar_r: ProgressBar = $EyelidStaminaBarR
@@ -121,6 +124,24 @@ func emit_player_particles() -> void:
 		player_particle_material.emission_box_extents = Vector3(player_score.size.x, player_score.size.y, 0.0)
 	
 	player_particles.emitting = true;
+
+func emit_player_score_bonus(val: int, is_player: bool) -> void:
+	score_bonus.position = player_score.pivot_offset
+	
+	if is_player:
+		bonus.text = "+"
+		bonus.add_theme_color_override("font_color", Color(0.29, 1.0, 0.264, 1.0))
+	else:
+		bonus.text = "-"
+		bonus.add_theme_color_override("font_color", Color("f43223"))
+	
+	bonus.text += str(val)
+	
+	var new_size: Vector2 = bonus.get_minimum_size()
+	sub_viewport.size = new_size
+	bonus.size = new_size
+	
+	score_bonus.restart()
 
 
 func grey_player_score() -> void:

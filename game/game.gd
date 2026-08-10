@@ -43,7 +43,7 @@ var rng := RandomNumberGenerator.new()
 @export var player_point_time: float = 0.1 # deault 0.1
 @export var enemy_point_time: float = 1.0 # deault 1.0
 @export var player_grace_period_time: float = 2.0 # deault 2.0
-@export var stamina_time: float = 0.1 # default 0.1
+@export var stamina_time: float = 0.05 # default 0.1
 @export var stamina_dec: float = 1 # default 1
 @export var stamina_rate: float = 2.0 # default 2.0
 
@@ -76,7 +76,7 @@ func _ready() -> void:
 	
 	_initialize_game_state()
 	
-	hud.open_eye() # initialize player eyes open 
+	hud.open_eye() # initialize player eyes open
 
 
 #endregion _ready
@@ -178,9 +178,11 @@ func _change_game_state(new_state: GameState) -> void:
 			# enemy will close eyes within a second
 			if enemy_is_blinking:
 				var prev_player_score: int = player_score
-				player_score += _get_enemy_mult_score()
+				var enemy_mult_score: int = _get_enemy_mult_score()
+				player_score += enemy_mult_score
 				_update_max_score()
 				hud.tween_player_score(prev_player_score, player_score, player_point_time)
+				hud.emit_player_score_bonus(enemy_mult_score, true)
 			enemy_timer.stop()
 			enemy_is_blinking = false
 			_toggle_enemy_eye_state()
@@ -367,11 +369,13 @@ func _toggle_enemy_eyes() -> void:
 
 func _enemy_scores_event() -> void:
 	var prev_player_score: int = player_score
-	player_score -= _get_enemy_mult_score()
+	var enemy_mult_score: int = _get_enemy_mult_score()
+	player_score -= enemy_mult_score
 	hud.hide_enemy_score()
 	if player_score < 0:
 		_change_game_state(GameState.GAME_OVER)
 	hud.tween_player_score(prev_player_score, player_score, player_point_time)
+	hud.emit_player_score_bonus(enemy_mult_score, false)
 
 
 func _get_enemy_mult_score() -> int:
