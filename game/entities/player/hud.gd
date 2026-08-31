@@ -11,6 +11,7 @@ var player_stamina_tween: Tween
 var player_score_pop_tween: Tween
 var player_score_color_tween: Tween
 var enemy_score_pop_tween: Tween
+var screen_glow_tween: Tween
 
 # =============================================================================
 # export variables
@@ -31,6 +32,8 @@ var enemy_score_pop_tween: Tween
 @onready var eyelid_animation_player: AnimationPlayer = $EyelidAnimationPlayer
 @onready var eyelid_stamina_bar_l: ProgressBar = $EyelidStaminaBarL
 @onready var eyelid_stamina_bar_r: ProgressBar = $EyelidStaminaBarR
+@onready var screen_glow: TextureRect = $ScreenGlow
+@onready var glow_animation_player: AnimationPlayer = $GlowAnimationPlayer
 
 # =============================================================================
 # helper methods
@@ -202,7 +205,44 @@ func pop_enemy_score() -> void:
 
 #endregion game scores
 
+#region screen glow
+func hide_screen_glow() -> void:
+	screen_glow.visible = false
+
+
+func blue_screen_glow() -> void:
+	_screen_glow_tween_check()
+	glow_animation_player.play("Blue Glowing")
+
+
+func red_screen_glow() -> void:
+	_screen_glow_tween_check()
+	glow_animation_player.play("Red Glowing")
+
+
+func no_screen_glow() -> void:
+	_screen_glow_tween_check()
+	glow_animation_player.play("No Glowing")
+
+
+func fade_screen_glow() -> void:
+	glow_animation_player.stop(false)
+	_screen_glow_tween_check()
+	screen_glow_tween = create_tween()
+	screen_glow_tween.tween_property(screen_glow, "self_modulate:a", 0.0, 1.0) \
+	.set_ease(Tween.EASE_OUT_IN)
+
+
+func _screen_glow_tween_check() -> void:
+	if screen_glow_tween and screen_glow_tween.is_valid():
+		screen_glow_tween.kill()
+
+
+#endregion screen glow
+
 func stop_hud() -> void:
 	hide_player_score()
 	hide_enemy_score()
 	hide_stamina_bars()
+	hide_screen_glow()
+	

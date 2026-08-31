@@ -36,8 +36,8 @@ var rng := RandomNumberGenerator.new()
 # export variables
 # =============================================================================
 
-@export var enemy_lerp_skew : float = 2.0 # default 2.0
-@export var enemy_timer_range := Vector2(3.0, 10.0) # default (3.0, 10.0)
+@export var enemy_lerp_skew : float = 1.75 # default 2.0
+@export var enemy_timer_range := Vector2(2.5, 10.0) # default (3.0, 10.0)
 @export var enemy_blinking_time: float = 2.0 # default 2.0
 @export var enemy_piercing_time: float = 1.0 # default 1.0
 @export var player_point_time: float = 0.1 # deault 0.1
@@ -76,7 +76,7 @@ func _ready() -> void:
 	
 	_initialize_game_state()
 	
-	hud.open_eye() # initialize player eyes open
+	_initialize_hud()
 
 
 #endregion _ready
@@ -223,6 +223,10 @@ func _initialize_enemy_timer() -> void:
 	enemy_timer.start()
 
 
+func _initialize_hud() -> void:
+	hud.open_eye() # initialize player eyes open
+	hud.blue_screen_glow() # initialize screen glow
+
 
 func _on_enemy_piercing_timer_timeout() -> void:
 	enemy_ui.stop_warnings()
@@ -341,6 +345,7 @@ func _on_enemy_timer_timeout() -> void:
 		enemy_is_blinking = true
 		enemy_ui.play_blinking(enemy_blinking_time)
 		enemy_timer.start(enemy_blinking_time)
+		hud.fade_screen_glow()
 	else:
 		# 1 second blink ended toggle enemy eye state
 		enemy_is_blinking = false
@@ -360,10 +365,12 @@ func _toggle_enemy_eyes() -> void:
 	if enemy_eyes_closed:
 		enemy_ui.play_opening()
 		enemy_ui.queue_open()
+		hud.red_screen_glow()
 		enemy_eyes_closed = false
 	else:
 		enemy_ui.play_closing()
 		enemy_ui.queue_close()
+		hud.blue_screen_glow()
 		enemy_eyes_closed = true
 
 
@@ -413,8 +420,8 @@ func _get_rand_lerpf(from: float, to: float, power: float) -> float:
 # Color coding, Eyes, particles, ui.
 # Add lable or particle effect for when large amount of points is added or subtracted from player
 # score.
-# Easy, Medium, Hard modes. Also change pacing of enemy for more lively feel. Use a pow and lerp
-# method to skew the random value.
+# Easy, Medium, Hard modes. Also change pacing of enemy for more lively feel. Add basic dificulty
+# variable to control timer durations, animation speeds, and enemy pacing.
 # 2 different enemy attacks: Glaring (reopen quickly) and (Piercing hold closed), within enemy
 # attack state. Player doesn't know until they shut their eyes what kind of attack it is. Glaring
 # animation is just the opposite of Piercing.
