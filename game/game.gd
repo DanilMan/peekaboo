@@ -25,6 +25,8 @@ var player_score_mult: int = 0
 var player_open_timestamp: int = 0
 var player_close_timestamp: int = 0
 var max_score: int = 0
+var enemy_timer_count: int = 0
+var enemy_timer_state: bool = true
 var enemy_score: int = 0
 var current_state: GameState = GameState.CLOSED
 var player_eyelids_closed: bool = false
@@ -36,8 +38,10 @@ var rng := RandomNumberGenerator.new()
 # export variables
 # =============================================================================
 
-@export var enemy_lerp_skew : float = 1.75 # default 2.0
-@export var enemy_timer_range := Vector2(2.5, 10.0) # default (3.0, 10.0)
+@export var enemy_slerp_skew : float = 1.75 # default 1.75
+@export var enemy_flerp_skew : float = 2.0 # default 2.0
+@export var enemy_stimer_range := Vector2(2.5, 7.0) # default (2.5, 7.0)
+@export var enemy_ftimer_range := Vector2(2.5, 3.5) # default (2.5, 3.5)
 @export var enemy_blinking_time: float = 2.0 # default 2.0
 @export var enemy_piercing_time: float = 1.0 # default 1.0
 @export var player_point_time: float = 0.1 # deault 0.1
@@ -216,8 +220,8 @@ func _initialize_all_timers() -> void:
 
 func _initialize_enemy_timer() -> void:
 	rng.randomize()
-	var rand_time: float = _get_rand_lerpf(enemy_timer_range.x, enemy_timer_range.y,
-			enemy_lerp_skew)
+	var rand_time: float = _get_rand_lerpf(enemy_stimer_range.x, enemy_stimer_range.y,
+			enemy_slerp_skew)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.timeout.connect(_on_enemy_timer_timeout)
 	enemy_timer.start()
@@ -303,6 +307,7 @@ func _close_player_eyes() -> void:
 	
 	player_close_timestamp = Time.get_ticks_msec()
 	var _player_open_duration: int = player_close_timestamp - player_open_timestamp
+	#print(_player_open_duration)
 	# set this to an average array !!!!!!!!!!!!!!!!!!!
 	
 	player_eyelids_closed = true
@@ -355,8 +360,18 @@ func _on_enemy_timer_timeout() -> void:
 func _toggle_enemy_eye_state(dec_range: float = 0.0) -> void:
 	_toggle_enemy_eyes()
 	_evaluate_eyes_state(false)
-	var rand_time: float = _get_rand_lerpf(enemy_timer_range.x, enemy_timer_range.y - dec_range,
-			enemy_lerp_skew)
+	if enemy_timer_count < 1:
+		enemy_timer_state = rng.randf() < 0.5
+		enemy_timer_count = rng.randi_range(0,5)
+		#print(enemy_timer_state, " : ", enemy_timer_count)
+	enemy_timer_count -= 1
+	var rand_time: float = 0.0
+	if enemy_timer_state:
+		rand_time = _get_rand_lerpf(enemy_stimer_range.x, enemy_stimer_range.y - dec_range,
+			enemy_slerp_skew)
+	else:
+		rand_time = _get_rand_lerpf(enemy_ftimer_range.x, enemy_ftimer_range.y - dec_range,
+			enemy_flerp_skew)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.start()
 
@@ -418,8 +433,8 @@ func _get_rand_lerpf(from: float, to: float, power: float) -> float:
 # player styles.
 
 # Color coding, Eyes, particles, ui.
-# Add lable or particle effect for when large amount of points is added or subtracted from player
-# score.
+# Change color coding red edge light. Instead of red light flashing, have a blurred enemy eye that
+# glows up and down in alpha value.
 # Easy, Medium, Hard modes. Also change pacing of enemy for more lively feel. Add basic dificulty
 # variable to control timer durations, animation speeds, and enemy pacing.
 # 2 different enemy attacks: Glaring (reopen quickly) and (Piercing hold closed), within enemy
