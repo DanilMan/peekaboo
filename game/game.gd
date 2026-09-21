@@ -437,9 +437,16 @@ func _get_rand_lerpf(from: float, to: float, power: float) -> float:
 # glows up and down in alpha value.
 # Easy, Medium, Hard modes. Also change pacing of enemy for more lively feel. Add basic dificulty
 # variable to control timer durations, animation speeds, and enemy pacing.
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Before adding new attack, finish implementing fast and slow attack state. Tweak fast attack until
+# it is exactly enough time (at minimum) for piercing attack to finish (simply input single test
+# float for enemy_timer.wait_time). Double animation speed of blinking for fast attack. Perhaps also
+# tweak enemy toggle math, so there is no mismatch with dec_range.
 # 2 different enemy attacks: Glaring (reopen quickly) and (Piercing hold closed), within enemy
 # attack state. Player doesn't know until they shut their eyes what kind of attack it is. Glaring
 # animation is just the opposite of Piercing.
+
 # Mini blinking game: single eye sprites that spawn and disappear. If you get all of them before the
 # enemy opens their eyes you get a point bonus for x amount of time.
 
