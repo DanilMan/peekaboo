@@ -40,14 +40,14 @@ var rng := RandomNumberGenerator.new()
 
 @export var enemy_slerp_skew : float = 1.75 # default 1.75
 @export var enemy_flerp_skew : float = 2.0 # default 2.0
-@export var enemy_stimer_range := Vector2(2.5, 7.0) # default (2.5, 7.0)
-@export var enemy_ftimer_range := Vector2(2.5, 3.5) # default (2.5, 3.5)
-@export var enemy_blinking_time: float = 2.0 # default 2.0
+@export var enemy_stimer_range := Vector2(3.5, 7.0) # default (3.5, 7.0)
+@export var enemy_ftimer_range := Vector2(2.5, 3.5) # default (2.0, 3.5)
+@export var enemy_blinking_time: float = 1.5 # default 1.5
 @export var enemy_piercing_time: float = 1.0 # default 1.0
 @export var player_point_time: float = 0.1 # deault 0.1
 @export var enemy_point_time: float = 1.0 # deault 1.0
 @export var player_grace_period_time: float = 2.0 # deault 2.0
-@export var stamina_time: float = 0.05 # default 0.1
+@export var stamina_time: float = 0.075 # default 0.075
 @export var stamina_dec: float = 1 # default 1
 @export var stamina_rate: float = 2.0 # default 2.0
 
@@ -207,7 +207,7 @@ func _change_game_state(new_state: GameState) -> void:
 func _initialize_all_timers() -> void:
 	_initialize_enemy_timer()
 	enemy_piercing_timer.wait_time = enemy_piercing_time
-	enemy_piercing_timer.timeout.connect(_on_enemy_piercing_timer_timeout)
+	#enemy_piercing_timer.timeout.connect(_on_enemy_piercing_timer_timeout) Probably unnecessary!!!!
 	player_point_timer.wait_time = player_point_time
 	player_point_timer.timeout.connect(_on_player_score_tick)
 	enemy_point_timer.wait_time = enemy_point_time
@@ -231,9 +231,9 @@ func _initialize_hud() -> void:
 	hud.open_eye() # initialize player eyes open
 	hud.blue_screen_glow() # initialize screen glow
 
-
-func _on_enemy_piercing_timer_timeout() -> void:
-	enemy_ui.stop_warnings()
+# Completely unnecessary!!!!!!!!!!!!
+#func _on_enemy_piercing_timer_timeout() -> void:
+	#enemy_ui.stop_warnings()
 
 
 func _on_player_score_tick() -> void:
@@ -363,14 +363,14 @@ func _toggle_enemy_eye_state(dec_range: float = 0.0) -> void:
 	if enemy_timer_count < 1:
 		enemy_timer_state = rng.randf() < 0.5
 		enemy_timer_count = rng.randi_range(0,5)
-		#print(enemy_timer_state, " : ", enemy_timer_count)
+		#print(("slow" if enemy_timer_state else "fast"), " : ", enemy_timer_count)
 	enemy_timer_count -= 1
 	var rand_time: float = 0.0
 	if enemy_timer_state:
 		rand_time = _get_rand_lerpf(enemy_stimer_range.x, enemy_stimer_range.y - dec_range,
 			enemy_slerp_skew)
 	else:
-		rand_time = _get_rand_lerpf(enemy_ftimer_range.x, enemy_ftimer_range.y - dec_range,
+		rand_time = _get_rand_lerpf(enemy_ftimer_range.x, enemy_ftimer_range.y - dec_range/2,
 			enemy_flerp_skew)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.start()
@@ -439,6 +439,7 @@ func _get_rand_lerpf(from: float, to: float, power: float) -> float:
 # variable to control timer durations, animation speeds, and enemy pacing.
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Decrement points when player eyes are closed?????????????????
 # Before adding new attack, finish implementing fast and slow attack state. Tweak fast attack until
 # it is exactly enough time (at minimum) for piercing attack to finish (simply input single test
 # float for enemy_timer.wait_time). Double animation speed of blinking for fast attack. Perhaps also
@@ -455,12 +456,10 @@ func _get_rand_lerpf(from: float, to: float, power: float) -> float:
 # Fix optimization for shader too.
 
 # Add particle text for enemy points?, shader for edge of screen glowing blood red when enemied eyes
-# open (bright until peircing ends, then mellow, then bright and blinking along with enemy eye
+# open (bright until piercing ends, then mellow, then bright and blinking along with enemy eye
 # blinks), add enemy eye blink animation acceleration.
 # Get as much visual information to the player to communicate what the game is. Also
-# maybe add some placeholder sfx.
-
-# Needs speed of enemyTimer to fluctuate from slower faster to make the game feel more lively  
+# maybe add some placeholder sfx. 
 
 # Add monster silhouette that fades in and out at random like a flickering and fading light source
 # allows their face to almost be visible in the darkness, creeping out the plater and giving them
