@@ -25,6 +25,9 @@ var player_score_mult: int = 0
 var player_open_timestamp: int = 0
 var player_close_timestamp: int = 0
 var max_score: int = 0
+var enemy_slerp_skew_adj : float = 0.0
+var enemy_flerp_skew_adj : float = 0.0
+var enemy_blinking_time_adj: float = 0.0
 var enemy_timer_count: int = 0
 var enemy_timer_state: bool = true
 var enemy_score: int = 0
@@ -38,6 +41,8 @@ var rng := RandomNumberGenerator.new()
 # export variables
 # =============================================================================
 
+@export var diff_skew: float = 0.5 # default 0.5
+@export var diff_max: float = 1000000000.0 # default 1000000000.0
 @export var enemy_slerp_skew : float = 1.75 # default 1.75
 @export var enemy_flerp_skew : float = 2.0 # default 2.0
 @export var enemy_stimer_range := Vector2(3.5, 7.0) # default (3.5, 7.0)
@@ -81,6 +86,8 @@ func _ready() -> void:
 	_initialize_game_state()
 	
 	_initialize_hud()
+	
+	_initialize_diff_weights()
 
 
 #endregion _ready
@@ -155,6 +162,8 @@ func _change_game_state(new_state: GameState) -> void:
 	enemy_ui.stop_warnings()
 	
 	hud.grey_player_score()
+	
+	_set_difficulty()
 	
 	_update_max_score()
 	
@@ -231,6 +240,13 @@ func _initialize_hud() -> void:
 	hud.open_eye() # initialize player eyes open
 	hud.blue_screen_glow() # initialize screen glow
 
+
+func _initialize_diff_weights() -> void:
+	enemy_slerp_skew_adj = enemy_slerp_skew
+	enemy_flerp_skew_adj = enemy_flerp_skew
+	enemy_blinking_time_adj = enemy_blinking_time
+
+
 # Completely unnecessary!!!!!!!!!!!!
 #func _on_enemy_piercing_timer_timeout() -> void:
 	#enemy_ui.stop_warnings()
@@ -238,7 +254,7 @@ func _initialize_hud() -> void:
 
 func _on_player_score_tick() -> void:
 	var prev_player_score: int = player_score
-	player_score_mult += 1 + _get_base_10_log(player_score)
+	player_score_mult += 1 + (1 * _get_base_10_log(player_score))
 	player_score += player_score_mult
 	hud.tween_player_score(prev_player_score, player_score, player_point_time)
 	hud.pop_player_score()
@@ -342,14 +358,14 @@ func _on_enemy_timer_timeout() -> void:
 	if current_state != GameState.ENEMY_STARING:
 		# enemy eyes are about to open after eyes are toggled
 		enemy_is_blinking = false
-		_toggle_enemy_eye_state(enemy_blinking_time)
+		_toggle_enemy_eye_state(enemy_blinking_time_adj)
 		return
 	
 	if not enemy_is_blinking:
 		# timer just ended and enemy is staring so start 1 second blink
 		enemy_is_blinking = true
-		enemy_ui.play_blinking(enemy_blinking_time)
-		enemy_timer.start(enemy_blinking_time)
+		enemy_ui.play_blinking(enemy_blinking_time_adj)
+		enemy_timer.start(enemy_blinking_time_adj)
 		hud.fade_screen_glow()
 	else:
 		# 1 second blink ended toggle enemy eye state
@@ -368,10 +384,10 @@ func _toggle_enemy_eye_state(dec_range: float = 0.0) -> void:
 	var rand_time: float = 0.0
 	if enemy_timer_state:
 		rand_time = _get_rand_lerpf(enemy_stimer_range.x, enemy_stimer_range.y - dec_range,
-			enemy_slerp_skew)
+			enemy_slerp_skew_adj)
 	else:
 		rand_time = _get_rand_lerpf(enemy_ftimer_range.x, enemy_ftimer_range.y - dec_range/2,
-			enemy_flerp_skew)
+			enemy_flerp_skew_adj)
 	enemy_timer.wait_time = rand_time
 	enemy_timer.start()
 
@@ -415,6 +431,14 @@ func _get_rand_lerpf(from: float, to: float, power: float) -> float:
 	return lerpf(from, to, weight)
 
 
+func _set_difficulty() -> void:
+	var diff_weight: float = (minf(player_score / diff_max, 1.0) ** diff_skew)
+	#print(diff_weight)
+	enemy_slerp_skew_adj = enemy_slerp_skew + diff_weight
+	enemy_flerp_skew_adj = enemy_flerp_skew + (diff_weight * 2)
+	enemy_blinking_time_adj = enemy_blinking_time - diff_weight
+
+
 #endregion helper methods
 
 # Note to future self:
@@ -438,12 +462,15 @@ func _get_rand_lerpf(from: float, to: float, power: float) -> float:
 # Easy, Medium, Hard modes. Also change pacing of enemy for more lively feel. Add basic dificulty
 # variable to control timer durations, animation speeds, and enemy pacing.
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Decrement points when player eyes are closed?????????????????
 # Before adding new attack, finish implementing fast and slow attack state. Tweak fast attack until
 # it is exactly enough time (at minimum) for piercing attack to finish (simply input single test
 # float for enemy_timer.wait_time). Double animation speed of blinking for fast attack. Perhaps also
 # tweak enemy toggle math, so there is no mismatch with dec_range.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Adjust difficulty to possibly handle avagerage of 1.0 and current weight after player hits max 
+# diffuclty.
 # 2 different enemy attacks: Glaring (reopen quickly) and (Piercing hold closed), within enemy
 # attack state. Player doesn't know until they shut their eyes what kind of attack it is. Glaring
 # animation is just the opposite of Piercing.
