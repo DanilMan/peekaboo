@@ -53,6 +53,13 @@ func play_piercing(time: float) -> void:
 	warning_animation_player.play("piercing")
 
 
+func play_glaring(time: float) -> void:
+	var length: float = warning_animation_player.get_animation("glaring").length
+	var anim_scale: float = get_anim_scale(time, length)
+	warning_animation_player.speed_scale = anim_scale
+	warning_animation_player.play("glaring")
+
+
 func stop_warnings() -> void:
 	warning_animation_player.speed_scale = 1.0 # reset scale
 	warning_animation_player.play("stop_warnings")

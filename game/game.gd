@@ -7,7 +7,8 @@ extends Control
 # enums
 # =============================================================================
 enum GameState {
-	ENEMY_STARING,
+	ENEMY_STARING_LONG,
+	ENEMY_STARING_SHORT,
 	PLAYER_STARING,
 	ENEMY_ATTACK,
 	PLAYER_ATTACK,
@@ -49,6 +50,7 @@ var rng := RandomNumberGenerator.new()
 @export var enemy_ftimer_range := Vector2(2.5, 3.5) # default (2.0, 3.5)
 @export var enemy_blinking_time: float = 1.5 # default 1.5
 @export var enemy_piercing_time: float = 1.0 # default 1.0
+@export var enemy_glaring_time: float = 2.0 # default 2.0
 @export var player_point_time: float = 0.1 # deault 0.1
 @export var enemy_point_time: float = 1.0 # deault 1.0
 @export var player_grace_period_time: float = 2.0 # deault 2.0
@@ -63,6 +65,7 @@ var rng := RandomNumberGenerator.new()
 @onready var hud: HUD = $HUD
 @onready var enemy_timer: Timer = $EnemyTimer
 @onready var enemy_piercing_timer: Timer = $EnemyPiercingTimer
+@onready var enemy_glaring_timer: Timer = $EnemyGlaringTimer
 @onready var player_point_timer: Timer = $PlayerPointTimer
 @onready var enemy_point_timer: Timer = $EnemyPointTimer
 @onready var player_grace_period_timer: Timer = $PlayerGracePeriodTimer
@@ -135,7 +138,7 @@ func _evaluate_eyes_state(is_player_action: bool) -> void:
 		new_state = GameState.PLAYER_STARING
 	# Rule 2: player closes shut and enemy is staring
 	elif player_eyelids_closed and not enemy_eyes_closed:
-		new_state = GameState.ENEMY_STARING
+		new_state = _select_enemy_stare()
 	# Rule 3: both open wide and context determines attacker
 	elif not player_eyelids_closed and not enemy_eyes_closed:
 		new_state = GameState.PLAYER_ATTACK if is_player_action else GameState.ENEMY_ATTACK
@@ -168,7 +171,7 @@ func _change_game_state(new_state: GameState) -> void:
 	_update_max_score()
 	
 	match current_state:
-		GameState.ENEMY_STARING:
+		GameState.ENEMY_STARING_LONG:
 			# increase enemy points
 			enemy_ui.play_piercing(enemy_piercing_time)
 			enemy_piercing_timer.start()
@@ -176,6 +179,11 @@ func _change_game_state(new_state: GameState) -> void:
 			hud.set_enemy_score(enemy_score)
 			hud.show_enemy_score()
 			enemy_point_timer.start()
+			player_grace_period_timer.stop()
+		GameState.ENEMY_STARING_SHORT:
+			enemy_ui.play_glaring(enemy_glaring_time)
+			enemy_glaring_timer.start()
+			enemy_score = 0
 			player_grace_period_timer.stop()
 		GameState.PLAYER_STARING:
 			# increase player points
@@ -210,6 +218,20 @@ func _change_game_state(new_state: GameState) -> void:
 			_stop_all_timers()
 
 
+func _select_enemy_stare(stare_state: int = 0, weight: float = 1.0) -> GameState:
+	match stare_state:
+		0:
+			var select_rand: bool = (rng.randf() ** weight) < 0.5
+			return GameState.ENEMY_STARING_LONG if select_rand else GameState.ENEMY_STARING_SHORT
+		1:
+			return GameState.ENEMY_STARING_LONG
+		2:
+			return GameState.ENEMY_STARING_SHORT
+		_:
+			printerr("Wrong 2nd argument.")
+			return GameState.GAME_OVER
+
+
 #endregion game state logic
 
 #region timer helper methods
@@ -217,6 +239,8 @@ func _initialize_all_timers() -> void:
 	_initialize_enemy_timer()
 	enemy_piercing_timer.wait_time = enemy_piercing_time
 	#enemy_piercing_timer.timeout.connect(_on_enemy_piercing_timer_timeout) Probably unnecessary!!!!
+	enemy_glaring_timer.wait_time = enemy_glaring_time
+	enemy_glaring_timer.timeout.connect(_on_enemy_glaring_timer_timeout)
 	player_point_timer.wait_time = player_point_time
 	player_point_timer.timeout.connect(_on_player_score_tick)
 	enemy_point_timer.wait_time = enemy_point_time
@@ -252,6 +276,10 @@ func _initialize_diff_weights() -> void:
 	#enemy_ui.stop_warnings()
 
 
+func _on_enemy_glaring_timer_timeout() -> void:
+	_change_game_state(GameState.GAME_OVER)
+
+
 func _on_player_score_tick() -> void:
 	var prev_player_score: int = player_score
 	player_score_mult += 1 + (1 * _get_base_10_log(player_score))
@@ -262,6 +290,15 @@ func _on_player_score_tick() -> void:
 
 func _update_max_score() -> void:
 	max_score = maxi(player_score, max_score)
+
+
+func _update_glare_score() -> void:
+	var glare_score: int = _get_enemy_mult_score(10)
+	glare_score = round(glare_score * (enemy_glaring_timer.time_left / enemy_glaring_time))
+	var prev_player_score: int = player_score
+	player_score += glare_score
+	hud.tween_player_score(prev_player_score, player_score, player_point_time)
+	hud.emit_player_score_bonus(glare_score, true)
 
 
 func _on_enemy_score_tick() -> void:
@@ -284,6 +321,7 @@ func _on_stamina_timeout() -> void:
 func _stop_all_timers() -> void:
 	enemy_timer.stop()
 	enemy_piercing_timer.stop()
+	enemy_glaring_timer.stop()
 	player_point_timer.stop()
 	enemy_point_timer.stop()
 	player_grace_period_timer.stop()
@@ -299,7 +337,7 @@ func _initialize_game_state() -> void:
 	elif not player_eyelids_closed and enemy_eyes_closed:
 		starting_state = GameState.PLAYER_STARING
 	elif player_eyelids_closed and not enemy_eyes_closed:
-		starting_state = GameState.ENEMY_STARING
+		starting_state = GameState.ENEMY_STARING_LONG
 	elif not player_eyelids_closed and not enemy_eyes_closed:
 		starting_state = GameState.ENEMY_ATTACK
 	_change_game_state(starting_state)
@@ -340,6 +378,10 @@ func _open_player_eyes() -> void:
 		_change_game_state(GameState.GAME_OVER)
 		return
 	
+	if not enemy_glaring_timer.is_stopped():
+		_update_glare_score()
+		enemy_glaring_timer.stop()
+	
 	hud.hide_stamina_bars()
 	stamina_timer.stop()
 	p_stamina_timestamp = Time.get_ticks_msec()
@@ -355,7 +397,7 @@ func _open_player_eyes() -> void:
 
 # toggles enemy eyes and resets enemy_timer with rand cooldown
 func _on_enemy_timer_timeout() -> void:
-	if current_state != GameState.ENEMY_STARING:
+	if current_state != GameState.ENEMY_STARING_LONG:
 		# enemy eyes are about to open after eyes are toggled
 		enemy_is_blinking = false
 		_toggle_enemy_eye_state(enemy_blinking_time_adj)
@@ -416,8 +458,8 @@ func _enemy_scores_event() -> void:
 	hud.emit_player_score_bonus(enemy_mult_score, false)
 
 
-func _get_enemy_mult_score() -> int:
-	return enemy_score * (10 ** _get_base_10_log(player_score))
+func _get_enemy_mult_score(mult: int = 0) -> int:
+	return (enemy_score + mult) * (10 ** _get_base_10_log(player_score))
 
 
 func _get_base_10_log(num: int) -> int:
