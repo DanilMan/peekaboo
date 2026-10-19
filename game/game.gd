@@ -463,6 +463,8 @@ func _set_difficulty() -> void:
 # variable to control timer durations, animation speeds, and enemy pacing.
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Try to understand bug (timer race case) when enemy_timer.wait_time is lower than 2.5 (piercing has
+# delayed start).
 # Decrement points when player eyes are closed?????????????????
 # Before adding new attack, finish implementing fast and slow attack state. Tweak fast attack until
 # it is exactly enough time (at minimum) for piercing attack to finish (simply input single test
